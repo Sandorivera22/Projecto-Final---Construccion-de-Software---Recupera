@@ -1,0 +1,152 @@
+// =============================================================================
+// PRISMA SCHEMA — RECUPERA (Objetos Perdidos y Encontrados, Campus INTEC)
+// Reflejo de schema.sql, con el modelo `Usuario` adaptado para Supabase Auth
+// (ver prisma/supabase-auth-adjustments.sql para el porqué y el SQL exacto)
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// -----------------------------------------------------------------------------
+// 1. Rol
+// -----------------------------------------------------------------------------
+model Rol {
+  idRol     Int    @id @default(autoincrement()) @map("id_rol") @db.SmallInt
+  nombreRol String @unique @map("nombre_rol") @db.VarChar(50)
+  estado    Boolean @default(true)
+
+  usuarios Usuario[]
+
+  @@map("rol")
+}
+
+// -----------------------------------------------------------------------------
+// 2. Categoria_objeto
+// -----------------------------------------------------------------------------
+model CategoriaObjeto {
+  idCategoriaObjeto Int    @id @default(autoincrement()) @map("id_categoria_objeto") @db.SmallInt
+  nombreCategoria   String @unique @map("nombre_categoria") @db.VarChar(100)
+  estado            Boolean @default(true)
+
+  reportes Reporte[]
+
+  @@map("categoria_objeto")
+}
+
+// -----------------------------------------------------------------------------
+// 3. Usuario
+// NOTA: id_usuario es UUID y coincide 1:1 con auth.users.id de Supabase.
+// El campo `password` de schema.sql original se elimina: Supabase Auth
+// gestiona las credenciales. Ver prisma/supabase-auth-adjustments.sql
+// -----------------------------------------------------------------------------
+model Usuario {
+  idUsuario       String  @id @map("id_usuario") @db.Uuid
+  idInstitucional String? @unique @map("id_institucional") @db.VarChar(20)
+  nombreCompleto  String  @map("nombre_completo") @db.VarChar(150)
+  correo          String  @unique @db.VarChar(150)
+  telefono        String? @db.VarChar(20)
+  idRol           Int     @map("id_rol") @db.SmallInt
+  estado          Boolean @default(true)
+  creadoEn        DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  rol Rol @relation(fields: [idRol], references: [idRol])
+
+  reportes                 Reporte[]
+  reclamaciones            Reclamacion[]
+  evaluacionesComoEncargado EvaluacionReclamacion[]
+  mensajes                 Mensaje[]
+
+  @@map("usuario")
+}
+
+// -----------------------------------------------------------------------------
+// 4. Reporte
+// -----------------------------------------------------------------------------
+model Reporte {
+  idReporte              BigInt   @id @default(autoincrement()) @map("id_reporte")
+  idUsuario              String   @map("id_usuario") @db.Uuid
+  idCategoriaObjeto      Int      @map("id_categoria_objeto") @db.SmallInt
+  tipo                   String   @db.VarChar(20) // 'perdido' | 'encontrado'
+  nombreObjeto           String   @map("nombre_objeto") @db.VarChar(120)
+  descripcionObjeto      String   @map("descripcion_objeto")
+  lugarCampus            String   @map("lugar_campus") @db.VarChar(150)
+  fechaEvento            DateTime @map("fecha_evento") @db.Date
+  enCustodiaOficina      Boolean  @default(false) @map("en_custodia_oficina")
+  urlFoto                String?  @map("url_foto") @db.VarChar(500)
+  estado                 String   @default("activo") @db.VarChar(20) // activo|en_proceso|resuelto|retirado
+  origenHallazgo         String   @default("estudiante") @map("origen_hallazgo") @db.VarChar(30)
+  nombrePersonalLimpieza String?  @map("nombre_personal_limpieza") @db.VarChar(150)
+  creadoEn               DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn          DateTime @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+
+  usuario         Usuario         @relation(fields: [idUsuario], references: [idUsuario])
+  categoriaObjeto CategoriaObjeto @relation(fields: [idCategoriaObjeto], references: [idCategoriaObjeto])
+  reclamaciones   Reclamacion[]
+
+  @@index([idCategoriaObjeto, estado], name: "idx_reporte_categoria_estado")
+  @@index([tipo, fechaEvento(sort: Desc)], name: "idx_reporte_tipo_fecha")
+  @@index([idUsuario], name: "idx_reporte_usuario")
+  @@map("reporte")
+}
+
+// -----------------------------------------------------------------------------
+// 5. Reclamacion
+// -----------------------------------------------------------------------------
+model Reclamacion {
+  idReclamacion    BigInt   @id @default(autoincrement()) @map("id_reclamacion")
+  idReporte        BigInt   @map("id_reporte")
+  idUsuario        String   @map("id_usuario") @db.Uuid
+  pruebasPropiedad String   @map("pruebas_propiedad")
+  estado           String   @default("pendiente") @db.VarChar(20) // pendiente|en_revision|aprobada|rechazada|completada
+  fechaSolicitud   DateTime @default(now()) @map("fecha_solicitud") @db.Timestamptz(6)
+
+  reporte     Reporte                @relation(fields: [idReporte], references: [idReporte])
+  usuario     Usuario                @relation(fields: [idUsuario], references: [idUsuario])
+  evaluacion  EvaluacionReclamacion?
+  mensajes    Mensaje[]
+
+  @@index([idReporte], name: "idx_reclamacion_reporte")
+  @@index([idUsuario], name: "idx_reclamacion_usuario")
+  @@map("reclamacion")
+}
+
+// -----------------------------------------------------------------------------
+// 6. Evaluaciones_reclamacion
+// -----------------------------------------------------------------------------
+model EvaluacionReclamacion {
+  idEvaluacion       BigInt   @id @default(autoincrement()) @map("id_evaluacion")
+  idReclamacion      BigInt   @unique @map("id_reclamacion")
+  idUsuarioEncargado String   @map("id_usuario_encargado") @db.Uuid
+  decision           String   @db.VarChar(20) // aprobada|rechazada|completada
+  observaciones      String
+  fechaEvaluacion    DateTime @default(now()) @map("fecha_evaluacion") @db.Timestamptz(6)
+
+  reclamacion      Reclamacion @relation(fields: [idReclamacion], references: [idReclamacion], onDelete: Cascade)
+  usuarioEncargado Usuario     @relation(fields: [idUsuarioEncargado], references: [idUsuario])
+
+  @@map("evaluaciones_reclamacion")
+}
+
+// -----------------------------------------------------------------------------
+// 7. Mensaje
+// -----------------------------------------------------------------------------
+model Mensaje {
+  idMensaje     BigInt   @id @default(autoincrement()) @map("id_mensaje")
+  idReclamacion BigInt   @map("id_reclamacion")
+  idUsuario     String   @map("id_usuario") @db.Uuid
+  contenido     String
+  fechaEnvio    DateTime @default(now()) @map("fecha_envio") @db.Timestamptz(6)
+
+  reclamacion Reclamacion @relation(fields: [idReclamacion], references: [idReclamacion], onDelete: Cascade)
+  usuario     Usuario     @relation(fields: [idUsuario], references: [idUsuario])
+
+  @@index([idReclamacion, fechaEnvio], name: "idx_mensaje_reclamacion_fecha")
+  @@map("mensaje")
+}
