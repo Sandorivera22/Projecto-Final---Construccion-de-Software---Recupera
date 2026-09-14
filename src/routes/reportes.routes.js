@@ -10,5 +10,6 @@ router.get("/:id", requireAuth, controller.obtener);
 router.post("/", requireAuth, controller.crear);
 router.patch("/:id", requireAuth, controller.actualizar);
 router.post("/:id/retirar", requireAuth, controller.retirar);
+router.post("/:id/marcar-recuperado", requireAuth, controller.marcarRecuperado);
 
 module.exports = router;

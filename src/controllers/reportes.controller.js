@@ -72,6 +72,32 @@ async function obtener(req, res) {
   res.json(reporte);
 }
 
+async function marcarRecuperado(req, res) {
+  const id = BigInt(req.params.id);
+  const reporte = await prisma.reporte.findUnique({ where: { idReporte: id } });
+  if (!reporte) throw new AppError("Reporte no encontrado", 404);
+
+  if (reporte.tipo !== "perdido") {
+    throw new AppError(
+      "Solo un reporte de objeto perdido se marca como recuperado directamente; " +
+        "un objeto encontrado se marca como entregado a través de la evaluación de una reclamación",
+      400
+    );
+  }
+  if (reporte.idUsuario !== req.usuario.idUsuario) {
+    throw new AppError("Solo el dueño del reporte puede marcarlo como recuperado", 403);
+  }
+  if (["retirado", "resuelto"].includes(reporte.estado)) {
+    throw new AppError(`Este reporte ya está en estado '${reporte.estado}'`, 400);
+  }
+
+  const actualizado = await prisma.reporte.update({
+    where: { idReporte: id },
+    data: { estado: "resuelto" },
+  });
+  res.json(actualizado);
+}
+
 async function crear(req, res) {
   const datos = crearReporteSchema.parse(req.body);
 
@@ -127,4 +153,4 @@ async function retirar(req, res) {
   res.json(actualizado);
 }
 
-module.exports = { listar, misReportes, obtener, crear, actualizar, retirar };
+module.exports = { listar, misReportes, obtener, crear, actualizar, retirar, marcarRecuperado };
