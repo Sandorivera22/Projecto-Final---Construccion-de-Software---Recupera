@@ -32,6 +32,24 @@ async function crear(req, res) {
     throw new AppError("No puedes reclamar tu propio reporte", 400);
   }
 
+  // RN-2, capa de aplicación: la protección "real" es el índice único parcial
+  // uq_reclamo_activo_usuario de schema.sql (id_reporte + id_usuario, solo
+  // para estado en pendiente/en_revision/aprobada). Como ese índice no se
+  // puede declarar en schema.prisma (Prisma no soporta índices parciales),
+  // esta verificación lo hace explícito aquí también: da un error más claro
+  // en el caso normal, y el índice de la BD sigue siendo el respaldo real
+  // ante condiciones de carrera (dos requests casi simultáneas).
+  const reclamacionActivaExistente = await prisma.reclamacion.findFirst({
+    where: {
+      idReporte: datos.idReporte,
+      idUsuario: req.usuario.idUsuario,
+      estado: { in: ["pendiente", "en_revision", "aprobada"] },
+    },
+  });
+  if (reclamacionActivaExistente) {
+    throw new AppError("Ya tienes una reclamación activa sobre este reporte", 409);
+  }
+
   const [reclamacion] = await prisma.$transaction([
     prisma.reclamacion.create({
       data: {

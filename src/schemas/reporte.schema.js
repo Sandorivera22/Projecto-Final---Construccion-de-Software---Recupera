@@ -6,7 +6,9 @@ const crearReporteSchema = z.object({
   nombreObjeto: z.string().trim().min(2).max(120),
   descripcionObjeto: z.string().trim().min(5),
   lugarCampus: z.string().trim().min(2).max(150),
-  fechaEvento: z.coerce.date(),
+  fechaEvento: z.coerce.date().max(new Date(), {
+    message: "La fecha del evento no puede ser futura",
+  }),
   enCustodiaOficina: z.boolean().optional().default(false),
   urlFoto: z.string().url().max(500).optional().nullable(),
   origenHallazgo: z

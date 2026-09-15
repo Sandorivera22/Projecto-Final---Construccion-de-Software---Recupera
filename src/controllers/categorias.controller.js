@@ -6,8 +6,16 @@ const categoriaSchema = z.object({
   nombreCategoria: z.string().trim().min(2).max(100),
 });
 
+const filtrosCategoriaSchema = z.object({
+  soloActivas: z
+    .enum(["true", "false"])
+    .optional()
+    .default("true")
+    .transform((v) => v === "true"),
+});
+
 async function listar(req, res) {
-  const soloActivas = req.query.soloActivas !== "false";
+  const { soloActivas } = filtrosCategoriaSchema.parse(req.query);
   const categorias = await prisma.categoriaObjeto.findMany({
     where: soloActivas ? { estado: true } : undefined,
     orderBy: { nombreCategoria: "asc" },

@@ -1,26 +1,41 @@
--- =============================================================================
--- AJUSTES A schema.sql PARA USAR SUPABASE AUTH
--- =============================================================================
--- Tu schema.sql original define `usuario.id_usuario` como BIGINT IDENTITY y
--- una columna `password`. Eso funciona si tú manejas el login manualmente,
--- pero como vamos con Supabase Auth, el usuario "real" (credenciales, hash de
--- password, confirmación de correo, recuperación de contraseña) vive en la
--- tabla interna `auth.users`, que Supabase administra por ti.
---
--- Patrón estándar de Supabase: la tabla `public.usuario` pasa a ser el
--- "perfil" de ese usuario, y su id_usuario DEBE ser el mismo UUID que
--- auth.users.id (no un BIGINT autogenerado aparte). Así:
---   - El frontend usa supabase-js para signUp/signIn (Supabase valida todo).
---   - Un trigger en auth.users crea automáticamente la fila en public.usuario.
---   - El backend solo confía en el JWT que emite Supabase para saber quién
---     hace la petición (ver src/middleware/auth.js).
---
--- Corre esto en el SQL Editor de Supabase DESPUÉS de tu schema.sql original,
--- reemplazando la definición vieja de `usuario`:
--- =============================================================================
 
--- 1. Si la tabla `usuario` ya existe con la definición vieja, recréala:
-DROP TABLE IF EXISTS usuario CASCADE;
+-- 1. Rol
+
+CREATE TABLE IF NOT EXISTS rol (
+    id_rol SMALLINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre_rol VARCHAR(50) NOT NULL UNIQUE,
+    estado BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+INSERT INTO rol (nombre_rol, estado)
+SELECT * FROM (VALUES
+    ('estudiante', TRUE),
+    ('encargado', TRUE),
+    ('admin', TRUE)
+) AS datos(nombre_rol, estado)
+WHERE NOT EXISTS (SELECT 1 FROM rol);
+
+
+-- 2. Categoria_objeto 
+
+CREATE TABLE IF NOT EXISTS categoria_objeto (
+    id_categoria_objeto SMALLINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre_categoria VARCHAR(100) NOT NULL UNIQUE,
+    estado BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+INSERT INTO categoria_objeto (nombre_categoria, estado)
+SELECT * FROM (VALUES
+    ('Electrónica y Cargadores', TRUE),
+    ('Documentos y Carnets', TRUE),
+    ('Material Académico y Libros', TRUE),
+    ('Ropa y Accesorios', TRUE),
+    ('Otros Artículos Personales', TRUE)
+) AS datos(nombre_categoria, estado)
+WHERE NOT EXISTS (SELECT 1 FROM categoria_objeto);
+
+
+-- 3. Usuario 
 
 CREATE TABLE usuario (
     id_usuario UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -36,18 +51,82 @@ CREATE TABLE usuario (
         id_institucional IS NULL OR id_institucional ~ '^[0-9]{7}$' OR LENGTH(id_institucional) <= 20
     )
 );
--- Nota: si ya tenías filas en `usuario` y referencias en reporte/reclamacion/etc.
--- desde otra corrida del schema, este DROP CASCADE las borra. En producción,
--- migra los datos primero en vez de dropear.
 
--- 2. Recrear las FK de las tablas hijas apuntando al nuevo tipo UUID
---    (si corriste schema.sql completo de nuevo después del DROP CASCADE,
---    este paso ya está resuelto porque las tablas hijas se recrean con
---    id_usuario UUID; si no, deberás ALTER cada columna id_usuario a UUID).
 
--- 3. Función + trigger: cuando alguien se registra vía Supabase Auth,
---    crea automáticamente su fila en public.usuario.
---    Por defecto asigna el rol "estudiante" (ajusta el id_rol si es otro).
+-- 4. Reporte 
+
+CREATE TABLE reporte (
+    id_reporte BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_usuario UUID NOT NULL REFERENCES usuario(id_usuario) ON DELETE RESTRICT,
+    id_categoria_objeto SMALLINT NOT NULL REFERENCES categoria_objeto(id_categoria_objeto) ON DELETE RESTRICT,
+    tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('perdido', 'encontrado')),
+    nombre_objeto VARCHAR(120) NOT NULL,
+    descripcion_objeto TEXT NOT NULL,
+    lugar_campus VARCHAR(150) NOT NULL,
+    fecha_evento DATE NOT NULL,
+    en_custodia_oficina BOOLEAN NOT NULL DEFAULT FALSE,
+    url_foto VARCHAR(500),
+    estado VARCHAR(20) NOT NULL DEFAULT 'activo' CHECK (estado IN ('activo', 'en_proceso', 'resuelto', 'retirado')),
+    origen_hallazgo VARCHAR(30) NOT NULL DEFAULT 'estudiante' CHECK (origen_hallazgo IN ('estudiante', 'personal_limpieza', 'seguridad', 'encargado')),
+    nombre_personal_limpieza VARCHAR(150),
+    creado_en TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- 5. Reclamación 
+
+CREATE TABLE reclamacion (
+    id_reclamacion BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_reporte BIGINT NOT NULL REFERENCES reporte(id_reporte) ON DELETE RESTRICT,
+    id_usuario UUID NOT NULL REFERENCES usuario(id_usuario) ON DELETE RESTRICT,
+    pruebas_propiedad TEXT NOT NULL,
+    estado VARCHAR(20) NOT NULL DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'en_revision', 'aprobada', 'rechazada', 'completada')),
+    fecha_solicitud TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- RF-22: evita que un mismo estudiante duplique reclamos activos sobre el mismo reporte
+CREATE UNIQUE INDEX uq_reclamo_activo_usuario
+ON reclamacion (id_reporte, id_usuario)
+WHERE estado IN ('pendiente', 'en_revision', 'aprobada');
+
+
+-- 6. Evaluaciones reclamacion 
+
+CREATE TABLE evaluaciones_reclamacion (
+    id_evaluacion BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_reclamacion BIGINT NOT NULL UNIQUE REFERENCES reclamacion(id_reclamacion) ON DELETE CASCADE,
+    id_usuario_encargado UUID NOT NULL REFERENCES usuario(id_usuario) ON DELETE RESTRICT,
+    decision VARCHAR(20) NOT NULL CHECK (decision IN ('aprobada', 'rechazada', 'completada')),
+    observaciones TEXT NOT NULL,
+    fecha_evaluacion TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- 7. Mensaje 
+
+CREATE TABLE mensaje (
+    id_mensaje BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_reclamacion BIGINT NOT NULL REFERENCES reclamacion(id_reclamacion) ON DELETE CASCADE,
+    id_usuario UUID NOT NULL REFERENCES usuario(id_usuario) ON DELETE RESTRICT,
+    contenido TEXT NOT NULL,
+    fecha_envio TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-
+-- Índices de rendimiento 
+
+CREATE INDEX idx_reporte_categoria_estado ON reporte(id_categoria_objeto, estado);
+CREATE INDEX idx_reporte_tipo_fecha ON reporte(tipo, fecha_evento DESC);
+CREATE INDEX idx_reporte_usuario ON reporte(id_usuario);
+CREATE INDEX idx_reclamacion_reporte ON reclamacion(id_reporte);
+CREATE INDEX idx_reclamacion_usuario ON reclamacion(id_usuario);
+CREATE INDEX idx_mensaje_reclamacion_fecha ON mensaje(id_reclamacion, fecha_envio ASC);
+
+
+-- Trigger: crea el perfil en public.usuario cuando alguien se registra
+-- vía Supabase Auth (supabase.auth.signUp). Rol por defecto: estudiante.
+
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -70,6 +149,3 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
--- Con esto, el frontend hace supabase.auth.signUp({ email, password, options:
--- { data: { nombre_completo, id_institucional } } }) y el perfil se crea solo.
