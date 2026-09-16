@@ -1,4 +1,6 @@
 const prisma = require("../lib/prisma");
+const path = require("path");
+const { supabaseAdmin } = require("../lib/supabase");
 const AppError = require("../utils/AppError");
 const {
   crearReporteSchema,
@@ -10,6 +12,14 @@ const {
 // a cualquiera que liste reportes, solo nombre.
 const REPORTANTE_PUBLICO = {
   select: { idUsuario: true, nombreCompleto: true },
+};
+const EXTENSIONES_FOTO_PERMITIDAS = new Set([".jpg", ".jpeg", ".png", ".webp", ".bmp"]);
+const TIPOS_MIME_FOTO = {
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".webp": "image/webp",
+  ".bmp": "image/bmp",
 };
 
 function esDuenoOStaff(reporte, usuario) {
@@ -115,6 +125,44 @@ async function crear(req, res) {
   res.status(201).json(reporte);
 }
 
+async function subirFoto(req, res) {
+  const id = BigInt(req.params.id);
+  if (!req.file) throw new AppError("Debes enviar una imagen en el campo 'foto'", 400);
+
+  const extension = path.extname(req.file.originalname).toLowerCase();
+  if (!EXTENSIONES_FOTO_PERMITIDAS.has(extension)) {
+    throw new AppError("Solo se permiten imágenes .jpg, .jpeg, .png, .webp o .bmp", 400);
+  }
+
+  const reporte = await prisma.reporte.findUnique({ where: { idReporte: id } });
+  if (!reporte) throw new AppError("Reporte no encontrado", 404);
+  if (!esDuenoOStaff(reporte, req.usuario)) {
+    throw new AppError("No puedes modificar la foto de este reporte", 403);
+  }
+
+  const bucket = process.env.SUPABASE_STORAGE_BUCKET_REPORTES;
+  if (!bucket) throw new AppError("El bucket de fotos no está configurado", 500);
+
+  const ruta = `reportes/${id.toString()}/${Date.now()}${extension}`;
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from(bucket)
+    .upload(ruta, req.file.buffer, {
+      contentType: TIPOS_MIME_FOTO[extension],
+      upsert: true,
+    });
+
+  if (uploadError) throw new AppError(`No se pudo subir la imagen: ${uploadError.message}`, 502);
+
+  const { data: publicUrl } = supabaseAdmin.storage.from(bucket).getPublicUrl(ruta);
+  const actualizado = await prisma.reporte.update({
+    where: { idReporte: id },
+    data: { urlFoto: publicUrl.publicUrl },
+    include: { categoriaObjeto: true },
+  });
+
+  res.json(actualizado);
+}
+
 async function actualizar(req, res) {
   const id = BigInt(req.params.id);
   const datos = actualizarReporteSchema.parse(req.body);
@@ -153,4 +201,4 @@ async function retirar(req, res) {
   res.json(actualizado);
 }
 
-module.exports = { listar, misReportes, obtener, crear, actualizar, retirar, marcarRecuperado };
+module.exports = { listar, misReportes, obtener, crear, actualizar, retirar, marcarRecuperado, subirFoto };

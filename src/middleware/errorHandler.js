@@ -1,5 +1,6 @@
 const { ZodError } = require("zod");
 const { Prisma } = require("@prisma/client");
+const multer = require("multer");
 
 /**
  * Manejador de errores centralizado. Con express-async-errors, cualquier
@@ -8,6 +9,17 @@ const { Prisma } = require("@prisma/client");
  */
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
+  if (err instanceof multer.MulterError) {
+    const mensaje = err.code === "LIMIT_FILE_SIZE"
+      ? "La imagen no puede superar los 5 MB"
+      : "Error al procesar la imagen";
+    return res.status(400).json({ error: mensaje });
+  }
+
+  if (err.message.startsWith("Solo se permiten imágenes")) {
+    return res.status(400).json({ error: err.message });
+  }
+
   // Errores de validación de entrada (zod)
   if (err instanceof ZodError) {
     return res.status(400).json({
