@@ -8,6 +8,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MyReports from "./pages/MyReports";
 import ReportForm from "./pages/ReportForm";
+import SearchReports from "./pages/SearchReports";
+import ReportDetail from "./pages/ReportDetail";
 
 function App() {
   return (
@@ -32,6 +34,26 @@ function App() {
               <ProtectedRoute>
                 <AppLayout>
                   <MyReports />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/buscar-objetos"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <SearchReports />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/objetos/:id"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ReportDetail />
                 </AppLayout>
               </ProtectedRoute>
             }

@@ -1,13 +1,13 @@
 import React from "react";
 import { useMemo, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import Logo from "../components/Logo";
 import { useAuth } from "../context/AuthContext";
 
 const navigation = [
   { label: "Dashboard", icon: "/assets/house.svg", to: "/dashboard" },
   { label: "Mis objetos", icon: "/assets/folder.svg", to: "/mis-objetos" },
-  { label: "Buscar objetos", icon: "/assets/search.svg" },
+  { label: "Buscar objetos", icon: "/assets/search.svg", to: "/buscar-objetos" },
   { label: "Coincidencias", icon: "/assets/refresh.svg", badge: 3 },
   { label: "Mi Perfil", icon: "/assets/user.svg" },
   { label: "Administración", icon: "/assets/settings.svg" },
@@ -27,6 +27,8 @@ function AppLayout({ children }) {
   const { profile, session, signOut } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const displayName = profile?.nombreCompleto || session?.user?.email || "Usuario";
   const initials = useMemo(
     () => getInitials(profile?.nombreCompleto, session?.user?.email),
@@ -51,7 +53,17 @@ function AppLayout({ children }) {
         <Logo compact />
         <div className="app-header__search">
           <img src="/assets/search.svg" alt="" />
-          <input aria-label="Buscar objetos" placeholder="Buscar laptop, carnet, llaves..." />
+          <input
+            aria-label="Buscar objetos"
+            defaultValue={searchParams.get("busqueda") || ""}
+            placeholder="Buscar laptop, carnet, llaves..."
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                const value = event.currentTarget.value.trim();
+                navigate(value ? `/buscar-objetos?busqueda=${encodeURIComponent(value)}` : "/buscar-objetos");
+              }
+            }}
+          />
         </div>
         <div className="app-header__user">
           <button className="notification-button" type="button" aria-label="Notificaciones">
@@ -82,14 +94,12 @@ function AppLayout({ children }) {
             {navigation.map((item) => (
               <NavLink
                 key={item.label}
-                to={item.to || "/dashboard"}
-                className={({ isActive }) => `app-nav-item ${isActive ? "app-nav-item--active" : ""} ${
+                to={item.to || "#"}
+                className={({ isActive }) => `app-nav-item ${item.to && isActive ? "app-nav-item--active" : ""} ${
                   !item.to ? "app-nav-item--disabled" : ""
                 }`}
                 onClick={(event) => {
-                  if (!item.to) {
-                    event.preventDefault();
-                  }
+                  if (!item.to) event.preventDefault();
                 }}
                 aria-disabled={!item.to}
               >
