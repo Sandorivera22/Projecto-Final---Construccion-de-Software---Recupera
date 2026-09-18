@@ -1,0 +1,238 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary-color: #E63946;
+  --secondary-color: #457B9D;
+  --success-color: #2A9D8F;
+  --warning-color: #F4A261;
+  --danger-color: #E76F51;
+  --light-bg: #F1FAEE;
+  --dark-text: #1D3557;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f8f9fa;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: #d62828;
+  border-color: #d62828;
+}
+
+.btn-success {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.btn-success:hover {
+  background-color: #218478;
+  border-color: #218478;
+}
+
+.btn-outline-primary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.text-danger {
+  color: var(--primary-color) !important;
+}
+
+.badge-primary {
+  background-color: var(--primary-color);
+}
+
+.badge-success {
+  background-color: var(--success-color);
+}
+
+.badge-warning {
+  background-color: var(--warning-color);
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(230, 57, 70, 0.25);
+}
+
+.form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(230, 57, 70, 0.25);
+}
+
+.card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: white !important;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  color: var(--primary-color) !important;
+  font-size: 1.3rem;
+}
+
+.nav-link {
+  color: var(--dark-text) !important;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--primary-color) !important;
+}
+
+.nav-link.active {
+  color: var(--primary-color) !important;
+  border-bottom: 3px solid var(--primary-color);
+}
+
+.container-custom {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.page-header {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: white;
+  padding: 30px 0;
+  margin-bottom: 30px;
+  border-radius: 0 0 8px 8px;
+}
+
+.page-header h1 {
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-header p {
+  margin: 10px 0 0 0;
+  opacity: 0.95;
+}
+
+.form-section {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.form-section h3 {
+  color: var(--primary-color);
+  font-weight: 700;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 10px;
+}
+
+.alert-info {
+  background-color: rgba(69, 123, 157, 0.1);
+  border: 1px solid var(--secondary-color);
+  color: var(--dark-text);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(230, 57, 70, 0.05);
+}
+
+.badge-estado-perdido {
+  background-color: #E63946;
+}
+
+.badge-estado-encontrado {
+  background-color: #2A9D8F;
+}
+
+.badge-estado-recuperado {
+  background-color: #52B788;
+}
+
+.badge-estado-entregado {
+  background-color: #52B788;
+}
+
+.badge-estado-en-revision {
+  background-color: #F4A261;
+}
+
+.modal-header {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.modal-header .btn-close {
+  filter: brightness(0) invert(1);
+}
+
+.spinner-border {
+  border-color: rgba(230, 57, 70, 0.3);
+  border-right-color: var(--primary-color);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  color: var(--dark-text);
+  margin-bottom: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container-custom {
+    padding: 10px;
+  }
+
+  .form-section {
+    padding: 20px;
+  }
+
+  .page-header {
+    padding: 20px 0;
+  }
+
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+}
