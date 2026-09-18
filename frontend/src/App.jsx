@@ -6,6 +6,8 @@ import AppLayout from "./layouts/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import MyReports from "./pages/MyReports";
+import ReportForm from "./pages/ReportForm";
 
 function App() {
   return (
@@ -20,6 +22,36 @@ function App() {
               <ProtectedRoute>
                 <AppLayout>
                   <Dashboard />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mis-objetos"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <MyReports />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reportar/:type"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ReportForm />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mis-objetos/editar/:id"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ReportForm />
                 </AppLayout>
               </ProtectedRoute>
             }

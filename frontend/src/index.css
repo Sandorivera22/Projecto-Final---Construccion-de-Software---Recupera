@@ -7,11 +7,6 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
-
-* {
-  box-sizing: border-box;
-}
-
 body {
   min-width: 320px;
   min-height: 100vh;
@@ -817,4 +812,360 @@ button:disabled {
   .activity-table {
     min-width: 680px;
   }
+}
+
+.report-page,
+.my-reports-page {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.report-page__heading,
+.my-reports-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.report-page__heading h1,
+.my-reports-heading h1 {
+  margin: 0 0 4px;
+  color: #242424;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.report-page__heading p,
+.my-reports-heading p {
+  max-width: 760px;
+  margin: 0;
+  color: #6f6f6f;
+  font-size: 13px;
+}
+
+.report-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.report-card {
+  border: 1px solid #dddddd;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 2%);
+}
+
+.report-card--details {
+  padding: 24px;
+}
+
+.report-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 12px;
+}
+
+.report-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+  color: #1f1f1f;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.report-field--wide {
+  grid-column: 1 / -1;
+}
+
+.report-field em {
+  color: #dd2f33;
+  font-style: normal;
+}
+
+.report-field input,
+.report-field select,
+.report-field textarea,
+.report-photo-url {
+  width: 100%;
+  border: 1px solid #d9d9d9;
+  border-radius: 7px;
+  background: #fff;
+  color: #333;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  outline: none;
+  padding: 9px 11px;
+}
+
+.report-field input,
+.report-field select {
+  height: 38px;
+}
+
+.report-field textarea {
+  resize: vertical;
+}
+
+.report-field input:focus,
+.report-field select:focus,
+.report-field textarea:focus,
+.report-photo-url:focus {
+  border-color: #d92f34;
+  box-shadow: 0 0 0 3px rgb(217 47 52 / 10%);
+}
+
+.report-page__aside {
+  display: grid;
+  gap: 18px;
+}
+
+.report-photo-card,
+.report-submit-card {
+  padding: 18px;
+}
+
+.report-photo-card h2 {
+  margin: 0 0 12px;
+  color: #272727;
+  font-size: 12px;
+}
+
+.report-photo-card h2 span {
+  color: #777;
+  font-weight: 400;
+}
+
+.report-photo-dropzone {
+  display: flex;
+  min-height: 112px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 9px;
+  background: #f7f7f7;
+  text-align: center;
+}
+
+.report-photo-dropzone img {
+  width: 25px;
+  height: 25px;
+  opacity: .9;
+}
+
+.report-photo-dropzone--perdido img {
+  filter: invert(24%) sepia(98%) saturate(2639%) hue-rotate(342deg) brightness(89%);
+}
+
+.report-photo-dropzone--encontrado img {
+  filter: invert(39%) sepia(89%) saturate(1900%) hue-rotate(190deg) brightness(89%);
+}
+
+.report-photo-dropzone strong {
+  color: #dc3034;
+  font-size: 11px;
+}
+
+.report-photo-dropzone--encontrado strong {
+  color: #2079d2;
+}
+
+.report-photo-dropzone small {
+  color: #777;
+  font-size: 10px;
+}
+
+.report-photo-url {
+  margin-top: 10px;
+  font-size: 11px;
+}
+
+.report-submit-card {
+  display: grid;
+  gap: 12px;
+}
+
+.report-submit-button,
+.report-secondary-button,
+.new-report-button {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.report-submit-button {
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+}
+
+.report-submit-button:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.report-submit-button--perdido,
+.new-report-button {
+  background: #dc3034;
+}
+
+.report-submit-button--encontrado {
+  background: #237ed3;
+}
+
+.report-secondary-button {
+  border: 1px solid #333;
+  background: #fff;
+  color: #333;
+}
+
+.new-report-button {
+  padding: 0 17px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.new-report-button:hover,
+.report-submit-button:hover:not(:disabled) {
+  filter: brightness(.95);
+}
+
+.reports-table-card {
+  overflow: hidden;
+  padding: 16px;
+}
+
+.reports-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #676767;
+  font-size: 11px;
+}
+
+.reports-table th {
+  border-bottom: 1px solid #e4e4e4;
+  color: #606060;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 8px 12px;
+  text-align: left;
+}
+
+.reports-table td {
+  padding: 16px 8px;
+  white-space: nowrap;
+}
+
+.reports-table td:first-child {
+  color: #272727;
+}
+
+.reports-table .object-icon {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.report-status {
+  display: inline-flex;
+  border-radius: 10px;
+  padding: 3px 9px;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.report-status--activo {
+  background: #dd3035;
+}
+
+.report-status--en_proceso {
+  background: #f17c00;
+}
+
+.report-status--resuelto {
+  background: #2d843a;
+}
+
+.report-status--retirado {
+  background: #777;
+}
+
+.report-actions-cell {
+  display: flex;
+  gap: 10px;
+}
+
+.report-actions-cell a,
+.report-actions-cell button {
+  border: 0;
+  background: transparent;
+  color: #1976d2;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0;
+}
+
+.report-actions-cell button {
+  color: #d8292f;
+}
+
+.my-reports-empty {
+  padding: 30px;
+  color: #686868;
+  font-size: 13px;
+  text-align: center;
+}
+
+.my-reports-empty a {
+  color: #d92f34;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .report-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .report-page__aside {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .report-page__heading,
+  .my-reports-heading {
+    flex-direction: column;
+  }
+
+  .report-fields,
+  .report-page__aside {
+    grid-template-columns: 1fr;
+  }
+
+  .report-field--wide {
+    grid-column: auto;
+  }
+
+  .new-report-button {
+    min-height: 36px;
+  }
+}
+
+* {
+  box-sizing: border-box;
 }

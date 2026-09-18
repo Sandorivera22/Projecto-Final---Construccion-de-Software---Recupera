@@ -5,8 +5,8 @@ import Logo from "../components/Logo";
 import { useAuth } from "../context/AuthContext";
 
 const navigation = [
-  { label: "Dashboard", icon: "/assets/house.svg", active: true },
-  { label: "Mis objetos", icon: "/assets/folder.svg" },
+  { label: "Dashboard", icon: "/assets/house.svg", to: "/dashboard" },
+  { label: "Mis objetos", icon: "/assets/folder.svg", to: "/mis-objetos" },
   { label: "Buscar objetos", icon: "/assets/search.svg" },
   { label: "Coincidencias", icon: "/assets/refresh.svg", badge: 3 },
   { label: "Mi Perfil", icon: "/assets/user.svg" },
@@ -82,18 +82,16 @@ function AppLayout({ children }) {
             {navigation.map((item) => (
               <NavLink
                 key={item.label}
-                to="/dashboard"
-                className={({ isActive }) =>
-                  `app-nav-item ${isActive && item.active ? "app-nav-item--active" : ""} ${
-                    !item.active ? "app-nav-item--disabled" : ""
-                  }`
-                }
+                to={item.to || "/dashboard"}
+                className={({ isActive }) => `app-nav-item ${isActive ? "app-nav-item--active" : ""} ${
+                  !item.to ? "app-nav-item--disabled" : ""
+                }`}
                 onClick={(event) => {
-                  if (!item.active) {
+                  if (!item.to) {
                     event.preventDefault();
                   }
                 }}
-                aria-disabled={!item.active}
+                aria-disabled={!item.to}
               >
                 <img src={item.icon} alt="" />
                 <span>{item.label}</span>

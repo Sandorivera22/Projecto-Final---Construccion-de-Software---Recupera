@@ -1,5 +1,6 @@
 import React from "react";
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import ErrorState from "../components/ErrorState";
 import LoadingState from "../components/LoadingState";
 import { useAuth } from "../context/AuthContext";
@@ -70,12 +71,12 @@ function Dashboard() {
           <p>Revisa tus coincidencias y reportes en tiempo real.</p>
         </div>
         <div className="dashboard-heading__actions">
-          <button className="report-action report-action--lost" type="button" disabled>
+          <Link className="report-action report-action--lost" to="/reportar/perdido">
             Reportar Objeto Perdido
-          </button>
-          <button className="report-action report-action--found" type="button" disabled>
+          </Link>
+          <Link className="report-action report-action--found" to="/reportar/encontrado">
             Reportar Encontrado
-          </button>
+          </Link>
         </div>
       </div>
 
