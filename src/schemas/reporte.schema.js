@@ -31,4 +31,10 @@ const filtrosReporteSchema = z.object({
   pageSize: z.coerce.number().int().positive().max(100).optional().default(20),
 });
 
-module.exports = { crearReporteSchema, actualizarReporteSchema, filtrosReporteSchema };
+const buscarSemanticoSchema = z.object({
+  descripcion: z.string().trim().min(3).max(500),
+  tipoReporte: z.enum(["perdido", "encontrado"]).optional(),
+  limite: z.coerce.number().int().positive().max(50).optional(),
+  umbralMinimo: z.coerce.number().min(0).max(100).optional(),
+});
+module.exports = { crearReporteSchema, actualizarReporteSchema, filtrosReporteSchema, buscarSemanticoSchema };

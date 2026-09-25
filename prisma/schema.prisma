@@ -90,6 +90,11 @@ model Reporte {
   categoriaObjeto CategoriaObjeto @relation(fields: [idCategoriaObjeto], references: [idCategoriaObjeto])
   reclamaciones   Reclamacion[]
 
+  // Generado y mantenido por el microservicio Python (motor-busqueda/), no
+  // por este backend — la relación queda aquí solo para que Prisma no
+  // marque drift al comparar el schema contra la base real.
+  embedding ReporteEmbedding?
+
   @@index([idCategoriaObjeto, estado], name: "idx_reporte_categoria_estado")
   @@index([tipo, fechaEvento(sort: Desc)], name: "idx_reporte_tipo_fecha")
   @@index([idUsuario], name: "idx_reporte_usuario")
@@ -149,4 +154,24 @@ model Mensaje {
 
   @@index([idReclamacion, fechaEnvio], name: "idx_mensaje_reclamacion_fecha")
   @@map("mensaje")
+}
+
+// -----------------------------------------------------------------------------
+// 8. Reporte_embedding — la crea y la mantiene motor-busqueda/ (Python), NO
+// este backend. Se declara aquí solo para que schema.prisma refleje la base
+// real; `embedding` usa Unsupported porque Prisma no tiene tipo nativo para
+// `vector` de pgvector — no se puede leer/escribir desde Prisma Client, y
+// está bien así, nunca debería tocarse desde Node.
+// -----------------------------------------------------------------------------
+model ReporteEmbedding {
+  idReporte         BigInt                @id @map("id_reporte")
+  modelo            String
+  embedding         Unsupported("vector(512)")
+  urlFotoProcesada  String                @map("url_foto_procesada")
+  creadoEn          DateTime              @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn     DateTime              @default(now()) @map("actualizado_en") @db.Timestamptz(6)
+
+  reporte Reporte @relation(fields: [idReporte], references: [idReporte], onDelete: Cascade)
+
+  @@map("reporte_embedding")
 }

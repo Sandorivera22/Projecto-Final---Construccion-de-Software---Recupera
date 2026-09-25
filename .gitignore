@@ -6,3 +6,4 @@ dist/
 indice_objetos.npz
 __pycache__/
 .DS_Store
+.venv/

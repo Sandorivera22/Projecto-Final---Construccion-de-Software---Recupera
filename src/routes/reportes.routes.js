@@ -20,6 +20,7 @@ const uploadFoto = multer({
 
 router.get("/", requireAuth, controller.listar);
 router.get("/mios", requireAuth, controller.misReportes);
+router.get("/buscar-semantico", requireAuth, controller.buscarSemantico);
 router.get("/:id", requireAuth, controller.obtener);
 router.post("/", requireAuth, controller.crear);
 router.post("/:id/foto", requireAuth, uploadFoto.single("foto"), controller.subirFoto);

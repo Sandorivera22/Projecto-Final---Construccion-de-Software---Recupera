@@ -7,6 +7,8 @@ const {
   actualizarReporteSchema,
   filtrosReporteSchema,
 } = require("../schemas/reporte.schema");
+const { indexarFoto, buscarPorDescripcion } = require("../services/motorBusqueda.service");
+const { buscarSemanticoSchema } = require("../schemas/reporte.schema");
 
 // Selección pública de campos del reportante: nunca exponemos correo/teléfono
 // a cualquiera que liste reportes, solo nombre.
@@ -160,7 +162,15 @@ async function subirFoto(req, res) {
     include: { categoriaObjeto: true },
   });
 
+  indexarFoto(id, publicUrl.publicUrl);
+
   res.json(actualizado);
+}
+
+async function buscarSemantico(req, res) {
+  const datos = buscarSemanticoSchema.parse(req.query);
+  const resultado = await buscarPorDescripcion(datos);
+  res.json(resultado);
 }
 
 async function actualizar(req, res) {
@@ -201,4 +211,4 @@ async function retirar(req, res) {
   res.json(actualizado);
 }
 
-module.exports = { listar, misReportes, obtener, crear, actualizar, retirar, marcarRecuperado, subirFoto };
+module.exports = { listar, misReportes, obtener, crear, actualizar, retirar, marcarRecuperado, subirFoto, buscarSemantico };
