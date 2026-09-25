@@ -10,6 +10,9 @@ import MyReports from "./pages/MyReports";
 import ReportForm from "./pages/ReportForm";
 import SearchReports from "./pages/SearchReports";
 import ReportDetail from "./pages/ReportDetail";
+import Matches from "./pages/Matches";
+import ClaimProcess from "./pages/ClaimProcess";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -48,6 +51,17 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+                      <Route
+              path="/matches"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Matches />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />    
           <Route
             path="/objetos/:id"
             element={
@@ -78,6 +92,28 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+                    <Route
+            path="/perfil"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Profile />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+                  <Route
+          path="/reclamacion"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <ClaimProcess />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

@@ -8,8 +8,8 @@ const navigation = [
   { label: "Dashboard", icon: "/assets/house.svg", to: "/dashboard" },
   { label: "Mis objetos", icon: "/assets/folder.svg", to: "/mis-objetos" },
   { label: "Buscar objetos", icon: "/assets/search.svg", to: "/buscar-objetos" },
-  { label: "Coincidencias", icon: "/assets/refresh.svg", badge: 3 },
-  { label: "Mi Perfil", icon: "/assets/user.svg" },
+  { label: "Coincidencias", icon: "/assets/refresh.svg", to: "/matches" }, 
+  { label: "Mi Perfil", icon: "/assets/user.svg", to: "/perfil" },
   { label: "Administración", icon: "/assets/settings.svg" },
 ];
 

@@ -1649,3 +1649,961 @@ button:disabled {
 * {
   box-sizing: border-box;
 }
+
+
+.matches-page {
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.matches-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.matches-page-header h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.matches-page-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.algorithm-badge {
+  background: #eef6ff;
+  color: #2563eb;
+  border: 1px solid #dbeafe;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+
+
+.matches-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.summary-icon {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #16a34a;
+  font-weight: bold;
+}
+
+.matches-summary strong {
+  display: block;
+  color: #166534;
+  margin-bottom: 3px;
+}
+
+.matches-summary span {
+  display: block;
+  color: #4b5563;
+  font-size: 13px;
+}
+
+/* Lista */
+
+.matches-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Card */
+
+.match-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.match-header h3 {
+  margin: 0 0 10px;
+  font-size: 17px;
+}
+
+.similarity-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.similarity-badge.alta {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.similarity-badge.media {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.similarity-badge.baja {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+
+
+.match-content {
+  display: grid;
+  grid-template-columns: 1fr 130px 1fr;
+  align-items: center;
+  gap: 28px;
+}
+
+.object-section {
+  padding: 18px;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.object-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.lost-dot {
+  background: #ef4444;
+}
+
+.found-dot {
+  background: #22c55e;
+}
+
+.object-section h4 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.object-section p {
+  margin: 7px 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.object-section strong {
+  color: #374151;
+}
+
+
+
+.match-score {
+  text-align: center;
+}
+
+.score-circle {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  border: 6px solid #dbeafe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+}
+
+.score-circle span {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.match-score p {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+
+
+.match-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.review-button,
+.discard-button {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.review-button {
+  background: #2563eb;
+  color: white;
+}
+
+.review-button:hover {
+  background: #1d4ed8;
+}
+
+.discard-button {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.discard-button:hover {
+  background: #e2e8f0;
+}
+
+
+
+.empty-matches {
+  text-align: center;
+  background: white;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 60px 20px;
+}
+
+.empty-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.empty-matches h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.empty-matches p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+
+
+@media (max-width: 800px) {
+  .matches-page {
+    padding: 20px;
+  }
+
+  .matches-page-header {
+    flex-direction: column;
+  }
+
+  .match-content {
+    grid-template-columns: 1fr;
+  }
+
+  .match-score {
+    order: 2;
+  }
+
+  .match-actions {
+    flex-direction: column;
+  }
+
+  .review-button,
+  .discard-button {
+    width: 100%;
+  }
+}
+
+/* =========================================
+   PROCESO DE RECLAMACIÓN
+   ========================================= */
+
+.claim-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.claim-header {
+  margin-bottom: 28px;
+}
+
+.claim-header h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+  font-weight: 700;
+  color: #172033;
+}
+
+.claim-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+
+
+.claim-progress {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.claim-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 150px;
+}
+
+.claim-step-number {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #64748b;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.claim-step.active .claim-step-number {
+  background: #ef4444;
+  color: white;
+}
+
+.claim-step strong {
+  display: block;
+  font-size: 12px;
+  color: #334155;
+}
+
+.claim-step span {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.claim-line {
+  flex: 1;
+  height: 2px;
+  background: #e5e7eb;
+  margin: 0 12px;
+}
+
+
+
+.claim-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
+  gap: 18px;
+  align-items: start;
+}
+
+
+
+.claim-form-card,
+.claim-object-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.claim-form-card {
+  padding: 20px;
+}
+
+.claim-object-card {
+  padding: 16px;
+}
+
+.claim-form-card h2,
+.claim-object-card h2 {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+
+
+.claim-info {
+  background: #e8f4ff;
+  border-radius: 6px;
+  padding: 11px 14px;
+  margin-bottom: 20px;
+
+  color: #3182ce;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+
+
+.claim-question {
+  margin-bottom: 20px;
+}
+
+.claim-question label {
+  display: block;
+  margin-bottom: 8px;
+
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.claim-question textarea {
+  width: 100%;
+  min-height: 82px;
+  box-sizing: border-box;
+
+  resize: vertical;
+
+  padding: 11px 12px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+
+  background: #f8fafc;
+  color: #334155;
+
+  font-family: inherit;
+  font-size: 12px;
+
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.claim-question textarea:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+  background: #ffffff;
+}
+
+.claim-question textarea::placeholder {
+  color: #94a3b8;
+}
+
+
+
+.claim-upload {
+  border: 1px dashed #cbd5e1;
+  border-radius: 7px;
+
+  background: #f8fafc;
+
+  padding: 18px;
+  text-align: center;
+}
+
+.claim-upload strong {
+  display: block;
+  margin-bottom: 5px;
+
+  color: #ef4444;
+  font-size: 12px;
+}
+
+.claim-upload span {
+  display: block;
+  margin-bottom: 12px;
+
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.claim-upload input[type="file"] {
+  font-size: 11px;
+  color: #64748b;
+}
+
+
+
+.claim-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  margin-top: 24px;
+  padding-top: 18px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+.claim-cancel,
+.claim-submit {
+  border-radius: 6px;
+  padding: 10px 18px;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.claim-cancel {
+  background: #ffffff;
+  color: #64748b;
+  border: 1px solid #d1d5db;
+}
+
+.claim-cancel:hover {
+  background: #f8fafc;
+}
+
+.claim-submit {
+  background: #dc2626;
+  color: #ffffff;
+  border: 1px solid #dc2626;
+}
+
+.claim-submit:hover {
+  background: #b91c1c;
+}
+
+
+
+.claim-object-card h2 {
+  margin-bottom: 14px;
+}
+
+.claim-object-placeholder {
+  height: 170px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 14px;
+
+  border-radius: 7px;
+  background: #e2e8f0;
+
+  color: #64748b;
+  font-size: 12px;
+}
+
+.claim-object-card h3 {
+  margin: 0 0 5px;
+
+  color: #1e293b;
+  font-size: 15px;
+}
+
+.claim-object-status {
+  display: inline-block;
+
+  margin-bottom: 16px;
+
+  color: #dc2626;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.claim-object-details {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 12px;
+}
+
+.claim-object-details p {
+  margin: 9px 0;
+
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.claim-object-details strong {
+  color: #334155;
+}
+
+
+
+@media (max-width: 850px) {
+  .claim-page {
+    padding: 20px;
+  }
+
+  .claim-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .claim-progress {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .claim-line {
+    width: 2px;
+    height: 20px;
+    margin: 0 14px;
+  }
+}
+
+@media (max-width: 500px) {
+  .claim-page {
+    padding: 15px;
+  }
+
+  .claim-actions {
+    flex-direction: column;
+  }
+
+  .claim-cancel,
+  .claim-submit {
+    width: 100%;
+  }
+}
+
+.profile-page {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: 290px minmax(0, 1fr);
+  gap: 24px;
+}
+
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.profile-card,
+.profile-stat-card,
+.profile-history,
+.profile-claims-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.profile-card--identity {
+  padding: 28px 22px;
+}
+
+.profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 82px;
+  height: 82px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #d32f2f;
+  color: #fff;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.profile-stat-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 126px;
+  padding: 18px;
+}
+
+.profile-stat-card strong {
+  margin: 8px 0 5px;
+  color: #d32f2f;
+  font-size: 28px;
+}
+
+.profile-stat-card__blue {
+  color: #1976d2 !important;
+}
+
+.profile-stat-card__green {
+  color: #2e7d32 !important;
+}
+
+.profile-history {
+  overflow: hidden;
+}
+
+.profile-history__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 18px 14px;
+}
+
+.profile-history__table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.profile-history__table {
+  width: 100%;
+  min-width: 820px;
+  border-collapse: collapse;
+}
+
+.profile-history__table th,
+.profile-history__table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.profile-type-pill,
+.profile-status-pill {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.profile-type-pill--perdido {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.profile-type-pill--encontrado {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.profile-status-pill--activo {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.profile-status-pill--en_proceso {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.profile-status-pill--resuelto {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.profile-status-pill--retirado {
+  background: #eee;
+  color: #666;
+}
+
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 24px;
+}
+
+.profile-primary-button,
+.profile-secondary-button {
+  min-height: 40px;
+  padding: 9px 14px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.profile-primary-button {
+  border: 1px solid #d32f2f;
+  background: #d32f2f;
+  color: #fff;
+}
+
+.profile-secondary-button {
+  border: 1px solid #d32f2f;
+  background: #fff;
+  color: #d32f2f;
+}
+
+.profile-information {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.profile-information__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-information__item span {
+  color: #888;
+  font-size: 11px;
+}
+
+.profile-information__item strong {
+  overflow-wrap: anywhere;
+  color: #333;
+  font-size: 12px;
+}
+
+.profile-edit-form {
+  padding-top: 4px;
+}
+
+.profile-form-field {
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.profile-form-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.profile-form-field input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 11px;
+  border: 1px solid #ddd;
+  border-radius: 7px;
+  outline: none;
+  font-size: 12px;
+}
+
+.profile-form-field input:focus {
+  border-color: #d32f2f;
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+}
+
+.profile-readonly-note {
+  margin: 4px 0;
+  color: #888;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.profile-feedback {
+  margin-bottom: 16px;
+  padding: 11px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.profile-feedback--success {
+  border: 1px solid #a5d6a7;
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.profile-feedback--error {
+  border: 1px solid #ef9a9a;
+  background: #ffebee;
+  color: #b71c1c;
+}
+
+.profile-claims-card {
+  display: flex;
+  align-items: center;
+  padding: 18px;
+}
+
+.profile-claims-card__label {
+  display: block;
+  color: #666;
+  font-size: 12px;
+}
+
+.profile-claims-card strong {
+  display: block;
+  margin-top: 4px;
+  color: #d32f2f;
+  font-size: 24px;
+}
+
+.profile-claims-card p {
+  margin: 4px 0 0;
+  color: #888;
+  font-size: 11px;
+}
+
+@media (max-width: 760px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-claims-card {
+    align-items: flex-start;
+  }
+}
