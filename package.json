@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "dev:python": "motor-busqueda\\.venv\\Scripts\\uvicorn.exe app.main:app --reload --port 8001 --app-dir motor-busqueda",
+    "dev:python": ".venv\\Scripts\\uvicorn.exe --app-dir recupera-motor-busqueda app.main:app --reload --port 8001",
     "dev:all": "concurrently -n node,python -c blue,yellow \"npm:dev\" \"npm:dev:python\"",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
