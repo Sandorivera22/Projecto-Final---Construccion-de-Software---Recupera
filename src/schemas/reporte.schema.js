@@ -6,7 +6,9 @@ const crearReporteSchema = z.object({
   nombreObjeto: z.string().trim().min(2).max(120),
   descripcionObjeto: z.string().trim().min(5),
   lugarCampus: z.string().trim().min(2).max(150),
-  fechaEvento: z.coerce.date(),
+  fechaEvento: z.coerce.date().max(new Date(), {
+    message: "La fecha del evento no puede ser futura",
+  }),
   enCustodiaOficina: z.boolean().optional().default(false),
   urlFoto: z.string().url().max(500).optional().nullable(),
   origenHallazgo: z
@@ -29,4 +31,10 @@ const filtrosReporteSchema = z.object({
   pageSize: z.coerce.number().int().positive().max(100).optional().default(20),
 });
 
-module.exports = { crearReporteSchema, actualizarReporteSchema, filtrosReporteSchema };
+const buscarSemanticoSchema = z.object({
+  descripcion: z.string().trim().min(3).max(500),
+  tipoReporte: z.enum(["perdido", "encontrado"]).optional(),
+  limite: z.coerce.number().int().positive().max(50).optional(),
+  umbralMinimo: z.coerce.number().min(0).max(100).optional(),
+});
+module.exports = { crearReporteSchema, actualizarReporteSchema, filtrosReporteSchema, buscarSemanticoSchema };
