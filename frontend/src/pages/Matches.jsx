@@ -1,199 +1,218 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import ErrorState from "../components/ErrorState";
+import LoadingState from "../components/LoadingState";
+import { useAuth } from "../context/AuthContext";
+import { apiRequest } from "../services/api";
 
-function MatchCard({ match, onDiscard, onReview }) {
-  const [discarded, setDiscarded] = useState(false);
+function formatDate(value) {
+  if (!value) {
+    return "Sin fecha";
+  }
 
-  if (discarded) return null;
+  return new Intl.DateTimeFormat("es-DO", {
+    dateStyle: "medium",
+  }).format(new Date(value));
+}
+
+function MatchReport({ report, type }) {
+  const isLost = type === "perdido";
 
   return (
-    <div className="match-card">
-      <div className="match-header">
-        <div>
-          <h3>Coincidencia automática #{match.id}</h3>
-
-          <span
-            className={`similarity-badge ${match.level?.toLowerCase()}`}
-          >
-            Similitud {match.level} ({match.similarity}%)
-          </span>
-        </div>
-      </div>
-
-      <div className="match-content">
-        {/* OBJETO PERDIDO */}
-        <div className="object-section">
-          <div className="section-label">
-            <span className="object-dot lost-dot"></span>
-            OBJETO PERDIDO
+    <section className="match-report">
+      {report.urlFoto ? (
+        <img className="match-report__image" src={report.urlFoto} alt={report.nombreObjeto} />
+      ) : (
+        <div className="match-report__image match-report__image--empty">Sin foto</div>
+      )}
+      <div className="match-report__details">
+        <span className="match-report__label">
+          <span className={`object-dot ${isLost ? "lost-dot" : "found-dot"}`} />
+          {isLost ? "REPORTE PERDIDO" : "REPORTE ENCONTRADO"}
+        </span>
+        <h3>{report.nombreObjeto}</h3>
+        <p>{report.descripcionObjeto}</p>
+        <dl>
+          {report.categoria ? (
+            <div>
+              <dt>Categoría</dt>
+              <dd>{report.categoria}</dd>
+            </div>
+          ) : null}
+          <div>
+            <dt>Ubicación</dt>
+            <dd>{report.lugarCampus}</dd>
           </div>
-
-          <h4>{match.lost.name}</h4>
-
-          <p>
-            <strong>Por:</strong> {match.lost.person}
-          </p>
-
-          <p>
-            <strong>Ubicación:</strong> {match.lost.location}
-          </p>
-
-          <p>
-            <strong>Reportado:</strong> {match.lost.date}
-          </p>
-        </div>
-
-        {/* PORCENTAJE */}
-        <div className="match-score">
-          <div className="score-circle">
-            <span>{match.similarity}%</span>
+          <div>
+            <dt>Fecha</dt>
+            <dd>{formatDate(report.fechaEvento)}</dd>
           </div>
-
-          <p>coincidencia</p>
-        </div>
-
-        {/* OBJETO ENCONTRADO */}
-        <div className="object-section">
-          <div className="section-label">
-            <span className="object-dot found-dot"></span>
-            OBJETO ENCONTRADO
-          </div>
-
-          <h4>{match.found.name}</h4>
-
-          <p>
-            <strong>Por:</strong> {match.found.person}
-          </p>
-
-          <p>
-            <strong>Ubicación:</strong> {match.found.location}
-          </p>
-
-          <p>
-            <strong>Encontrado:</strong> {match.found.date}
-          </p>
-        </div>
+          {!isLost && report.reportante ? (
+            <div>
+              <dt>Reportado por</dt>
+              <dd>{report.reportante}</dd>
+            </div>
+          ) : null}
+        </dl>
       </div>
-
-      <div className="match-actions">
-        <button
-          className="review-button"
-          onClick={() => onReview(match)}
-        >
-          Revisar Coincidencia
-        </button>
-
-        <button
-          className="discard-button"
-          onClick={() => {
-            setDiscarded(true);
-            onDiscard(match);
-          }}
-        >
-          Descartar
-        </button>
-      </div>
-    </div>
+    </section>
   );
 }
 
-export default function Matches() {
-  const navigate = useNavigate();
+function MatchCard({ match }) {
+  return (
+    <article className="match-card">
+      <div className="match-header">
+        <h2>Posible coincidencia</h2>
+        <span className="similarity-badge">
+          Similitud {Number(match.similitud).toFixed(2)}%
+        </span>
+      </div>
 
-  // Temporalmente vacío.
-  // Cuando exista el endpoint del backend,
-  // aquí cargaremos las coincidencias reales.
-  const [matches, setMatches] = useState([
-  {
-    id: "TEST-001",
-    level: "Alta",
-    similarity: 92,
+      <div className="match-content">
+        <MatchReport report={match.perdido} type="perdido" />
+        <div className="match-score" aria-label={`Similitud ${match.similitud}%`}>
+          <div className="score-circle">
+            <span>{Math.round(match.similitud)}%</span>
+          </div>
+          <p>similitud</p>
+        </div>
+        <MatchReport report={match.encontrado} type="encontrado" />
+      </div>
 
-    lost: {
-      name: "Laptop de prueba",
-      person: "Usuario de prueba",
-      location: "Biblioteca",
-      date: "Hace 2 horas",
+      <div className="match-actions">
+        <Link className="review-button" to={`/objetos/${match.encontrado.idReporte}`}>
+          Ver reporte encontrado
+        </Link>
+      </div>
+    </article>
+  );
+}
+
+function Matches() {
+  const { session } = useAuth();
+  const [matches, setMatches] = useState([]);
+  const [reportsConsulted, setReportsConsulted] = useState(null);
+  const [minimumSimilarity, setMinimumSimilarity] = useState("25");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadMatches = useCallback(
+    async (threshold = 25) => {
+      if (!session?.access_token) {
+        return;
+      }
+
+      setLoading(true);
+      setError("");
+
+      try {
+        const response = await apiRequest(
+          `/reportes/mis-coincidencias?umbralMinimo=${encodeURIComponent(threshold)}`,
+          { accessToken: session.access_token }
+        );
+        setMatches(response.resultados || []);
+        setReportsConsulted(response.reportesConsultados || 0);
+      } catch (loadError) {
+        setError(loadError.message || "No se pudieron cargar las coincidencias.");
+      } finally {
+        setLoading(false);
+      }
     },
+    [session?.access_token]
+  );
 
-    found: {
-      name: "Laptop encontrada",
-      person: "Personal de seguridad",
-      location: "Oficina de objetos encontrados",
-      date: "Hace 1 hora",
-    },
-  },
-]);
+  useEffect(() => {
+    loadMatches();
+  }, [loadMatches]);
 
-  const handleDiscard = (match) => {
-    setMatches((current) =>
-      current.filter((item) => item.id !== match.id)
-    );
-  };
+  function handleThresholdSubmit(event) {
+    event.preventDefault();
+    const threshold = Number(minimumSimilarity);
 
-  const handleReview = (match) => {
-    navigate("/reclamacion", {
-      state: {
-        match,
-      },
-    });
-  };
+    if (!Number.isFinite(threshold) || threshold < 0 || threshold > 100) {
+      setError("El umbral debe ser un número entre 0 y 100.");
+      return;
+    }
+
+    loadMatches(threshold);
+  }
 
   return (
     <div className="matches-page">
       <div className="matches-page-header">
         <div>
           <h1>Coincidencias Detectadas</h1>
-
           <p>
-            Comparamos automáticamente características, fechas y ubicaciones
-            de reportes de objetos perdidos vs. encontrados.
+            Candidatos encontrados al comparar tus reportes perdidos activos con
+            reportes encontrados. La similitud no confirma que sean el mismo objeto.
           </p>
         </div>
-
-        <div className="algorithm-badge">
-          ✨ Algoritmo Recupera+
-        </div>
+        <div className="algorithm-badge">Motor semántico CLIP</div>
       </div>
 
-      <div className="matches-summary">
-        <div className="summary-icon">✓</div>
+      <form className="matches-controls" onSubmit={handleThresholdSubmit}>
+        <label htmlFor="minimum-similarity">
+          Similitud mínima (%)
+          <input
+            id="minimum-similarity"
+            type="number"
+            min="0"
+            max="100"
+            step="1"
+            value={minimumSimilarity}
+            onChange={(event) => setMinimumSimilarity(event.target.value)}
+          />
+        </label>
+        <button className="review-button" type="submit" disabled={loading}>
+          {loading ? "Buscando..." : "Actualizar búsqueda"}
+        </button>
+      </form>
 
-        <div>
-          <strong>
-            {matches.length} coincidencias detectadas
-          </strong>
+      {error ? <ErrorState message={error} onRetry={() => loadMatches(Number(minimumSimilarity))} /> : null}
+      {loading ? <LoadingState message="Buscando coincidencias para tus reportes..." /> : null}
 
-          <span>
-            Las posibles coincidencias entre objetos perdidos y encontrados
-            aparecerán aquí.
-          </span>
-        </div>
-      </div>
-
-      <div className="matches-list">
-        {matches.length > 0 ? (
-          matches.map((match) => (
-            <MatchCard
-              key={match.id}
-              match={match}
-              onDiscard={handleDiscard}
-              onReview={handleReview}
-            />
-          ))
-        ) : (
-          <div className="empty-matches">
-            <div className="empty-icon">✓</div>
-
-            <h3>No hay coincidencias disponibles</h3>
-
-            <p>
-              Cuando el sistema detecte una posible coincidencia,
-              aparecerá en esta sección.
-            </p>
+      {!loading && !error ? (
+        <>
+          <div className="matches-summary">
+            <div className="summary-icon">✓</div>
+            <div>
+              <strong>{matches.length} candidatos encontrados</strong>
+              <span>
+                {reportsConsulted} reportes perdidos activos consultados con un
+                umbral mínimo de {minimumSimilarity}%.
+              </span>
+            </div>
           </div>
-        )}
-      </div>
+
+          {reportsConsulted === 0 ? (
+            <div className="empty-matches">
+              <h2>No tienes reportes perdidos activos</h2>
+              <p>Crea un reporte de objeto perdido para buscar candidatos.</p>
+              <Link className="review-button" to="/reportar/perdido">
+                Crear reporte perdido
+              </Link>
+            </div>
+          ) : matches.length === 0 ? (
+            <div className="empty-matches">
+              <h2>No hay candidatos sobre este umbral</h2>
+              <p>
+                No se encontraron reportes encontrados con similitud igual o
+                superior a {minimumSimilarity}%. Puedes probar con un umbral menor.
+              </p>
+            </div>
+          ) : (
+            <div className="matches-list">
+              {matches.map((match) => (
+                <MatchCard key={match.id} match={match} />
+              ))}
+            </div>
+          )}
+        </>
+      ) : null}
     </div>
   );
 }
+
+export default Matches;

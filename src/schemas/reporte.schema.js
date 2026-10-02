@@ -37,4 +37,15 @@ const buscarSemanticoSchema = z.object({
   limite: z.coerce.number().int().positive().max(50).optional(),
   umbralMinimo: z.coerce.number().min(0).max(100).optional(),
 });
-module.exports = { crearReporteSchema, actualizarReporteSchema, filtrosReporteSchema, buscarSemanticoSchema };
+
+const misCoincidenciasSchema = z.object({
+  umbralMinimo: z.coerce.number().min(0).max(100).optional().default(25),
+});
+
+module.exports = {
+  crearReporteSchema,
+  actualizarReporteSchema,
+  filtrosReporteSchema,
+  buscarSemanticoSchema,
+  misCoincidenciasSchema,
+};

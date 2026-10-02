@@ -6,6 +6,7 @@ const {
   crearReporteSchema,
   actualizarReporteSchema,
   filtrosReporteSchema,
+  misCoincidenciasSchema,
 } = require("../schemas/reporte.schema");
 const { indexarFoto, buscarPorDescripcion } = require("../services/motorBusqueda.service");
 const { buscarSemanticoSchema } = require("../schemas/reporte.schema");
@@ -173,6 +174,103 @@ async function buscarSemantico(req, res) {
   res.json(resultado);
 }
 
+async function misCoincidencias(req, res) {
+  const { umbralMinimo } = misCoincidenciasSchema.parse(req.query);
+  const reportesPerdidos = await prisma.reporte.findMany({
+    where: {
+      idUsuario: req.usuario.idUsuario,
+      tipo: "perdido",
+      estado: "activo",
+    },
+    include: { categoriaObjeto: true },
+    orderBy: { creadoEn: "desc" },
+  });
+
+  const busquedas = await Promise.all(
+    reportesPerdidos.map(async (reportePerdido) => {
+      const consulta = `${reportePerdido.nombreObjeto}. ${reportePerdido.descripcionObjeto}`;
+      const resultado = await buscarPorDescripcion({
+        descripcion: consulta.slice(0, 500),
+        tipoReporte: "encontrado",
+        limite: 10,
+        umbralMinimo,
+      });
+
+      if (!Array.isArray(resultado?.resultados)) {
+        throw new AppError("El motor devolvió una respuesta de búsqueda inválida", 502);
+      }
+
+      return { reportePerdido, resultados: resultado.resultados };
+    })
+  );
+
+  const idsEncontrados = [
+    ...new Set(
+      busquedas.flatMap(({ resultados }) =>
+        resultados
+          .map((resultado) => String(resultado.id_reporte))
+          .filter((id) => /^\d+$/.test(id))
+      )
+    ),
+  ];
+
+  if (idsEncontrados.length === 0) {
+    return res.json({ reportesConsultados: reportesPerdidos.length, resultados: [] });
+  }
+
+  const reportesEncontrados = await prisma.reporte.findMany({
+    where: {
+      idReporte: { in: idsEncontrados.map((id) => BigInt(id)) },
+      tipo: "encontrado",
+      estado: "activo",
+      idUsuario: { not: req.usuario.idUsuario },
+    },
+    include: {
+      categoriaObjeto: true,
+      usuario: REPORTANTE_PUBLICO,
+    },
+  });
+  const reportesPorId = new Map(
+    reportesEncontrados.map((reporte) => [reporte.idReporte.toString(), reporte])
+  );
+
+  const coincidencias = busquedas.flatMap(({ reportePerdido, resultados }) =>
+    resultados.flatMap((resultado) => {
+      const reporteEncontrado = reportesPorId.get(String(resultado.id_reporte));
+      if (!reporteEncontrado) {
+        return [];
+      }
+
+      return [{
+        id: `${reportePerdido.idReporte}-${reporteEncontrado.idReporte}`,
+        similitud: resultado.similitud,
+        perdido: {
+          idReporte: reportePerdido.idReporte.toString(),
+          nombreObjeto: reportePerdido.nombreObjeto,
+          descripcionObjeto: reportePerdido.descripcionObjeto,
+          lugarCampus: reportePerdido.lugarCampus,
+          fechaEvento: reportePerdido.fechaEvento,
+          urlFoto: reportePerdido.urlFoto,
+          categoria: reportePerdido.categoriaObjeto?.nombreCategoria || null,
+        },
+        encontrado: {
+          idReporte: reporteEncontrado.idReporte.toString(),
+          nombreObjeto: reporteEncontrado.nombreObjeto,
+          descripcionObjeto: reporteEncontrado.descripcionObjeto,
+          lugarCampus: reporteEncontrado.lugarCampus,
+          fechaEvento: reporteEncontrado.fechaEvento,
+          urlFoto: reporteEncontrado.urlFoto,
+          categoria: reporteEncontrado.categoriaObjeto?.nombreCategoria || null,
+          reportante: reporteEncontrado.usuario?.nombreCompleto || null,
+        },
+      }];
+    })
+  );
+
+  coincidencias.sort((a, b) => b.similitud - a.similitud);
+  res.json({ reportesConsultados: reportesPerdidos.length, resultados: coincidencias });
+}
+
 async function actualizar(req, res) {
   const id = BigInt(req.params.id);
   const datos = actualizarReporteSchema.parse(req.body);
@@ -211,4 +309,15 @@ async function retirar(req, res) {
   res.json(actualizado);
 }
 
-module.exports = { listar, misReportes, obtener, crear, actualizar, retirar, marcarRecuperado, subirFoto, buscarSemantico };
+module.exports = {
+  listar,
+  misReportes,
+  misCoincidencias,
+  obtener,
+  crear,
+  actualizar,
+  retirar,
+  marcarRecuperado,
+  subirFoto,
+  buscarSemantico,
+};
