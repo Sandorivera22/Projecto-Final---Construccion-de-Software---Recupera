@@ -8,9 +8,9 @@ const navigation = [
   { label: "Dashboard", icon: "/assets/house.svg", to: "/dashboard" },
   { label: "Mis objetos", icon: "/assets/folder.svg", to: "/mis-objetos" },
   { label: "Buscar objetos", icon: "/assets/search.svg", to: "/buscar-objetos" },
-  { label: "Coincidencias", icon: "/assets/refresh.svg", to: "/matches" }, 
+  { label: "Coincidencias", icon: "/assets/refresh.svg", to: "/matches" },
   { label: "Mi Perfil", icon: "/assets/user.svg", to: "/perfil" },
-  { label: "Administración", icon: "/assets/settings.svg" },
+  { label: "Administración", icon: "/assets/settings.svg", to: "/administracion", adminOnly: true },
 ];
 
 function getInitials(name, email) {
@@ -30,6 +30,8 @@ function AppLayout({ children }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const displayName = profile?.nombreCompleto || session?.user?.email || "Usuario";
+  const isAdmin = profile?.rol?.nombreRol === "admin";
+  const visibleNavigation = navigation.filter((item) => !item.adminOnly || isAdmin);
   const initials = useMemo(
     () => getInitials(profile?.nombreCompleto, session?.user?.email),
     [profile?.nombreCompleto, session?.user?.email]
@@ -91,17 +93,11 @@ function AppLayout({ children }) {
       <div className="app-workspace">
         <aside className="app-sidebar">
           <nav aria-label="Navegación principal">
-            {navigation.map((item) => (
+            {visibleNavigation.map((item) => (
               <NavLink
                 key={item.label}
                 to={item.to || "#"}
-                className={({ isActive }) => `app-nav-item ${item.to && isActive ? "app-nav-item--active" : ""} ${
-                  !item.to ? "app-nav-item--disabled" : ""
-                }`}
-                onClick={(event) => {
-                  if (!item.to) event.preventDefault();
-                }}
-                aria-disabled={!item.to}
+                className={({ isActive }) => `app-nav-item ${item.to && isActive ? "app-nav-item--active" : ""}`}
               >
                 <img src={item.icon} alt="" />
                 <span>{item.label}</span>

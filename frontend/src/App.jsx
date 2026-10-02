@@ -13,6 +13,7 @@ import ReportDetail from "./pages/ReportDetail";
 import Matches from "./pages/Matches";
 import ClaimProcess from "./pages/ClaimProcess";
 import Profile from "./pages/Profile";
+import Administration from "./pages/Administration";
 
 function App() {
   return (
@@ -99,6 +100,16 @@ function App() {
               <ProtectedRoute>
                 <AppLayout>
                   <Profile />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/administracion"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Administration />
                 </AppLayout>
               </ProtectedRoute>
             }
