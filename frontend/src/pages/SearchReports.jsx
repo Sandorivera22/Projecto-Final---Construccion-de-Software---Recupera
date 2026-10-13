@@ -34,7 +34,7 @@ function SearchReports() {
     () => ({
       busqueda: searchParams.get("busqueda") || "",
       tipo: searchParams.get("tipo") || "",
-      idCategoriaObjeto: searchParams.get("categoria") || "",
+      idCategoriaObjeto: searchParams.get("idCategoriaObjeto") || searchParams.get("categoria") || "",
       estado: searchParams.get("estado") || "",
       page: Number(searchParams.get("page") || 1),
     }),

@@ -28,6 +28,8 @@ function ReportForm() {
   const [loading, setLoading] = useState(Boolean(id));
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState("");
   const [error, setError] = useState("");
 
   const isEditing = Boolean(id);
@@ -66,6 +68,7 @@ function ReportForm() {
           urlFoto: report.urlFoto || "",
           nombrePersonalLimpieza: report.nombrePersonalLimpieza || "",
         });
+        setPhotoPreview(report.urlFoto || "");
       } catch (loadError) {
         setError(loadError.message || "No se pudo cargar el reporte.");
       } finally {
@@ -75,6 +78,11 @@ function ReportForm() {
 
     loadReport();
   }, [id, session.access_token]);
+
+  useEffect(() => {
+    if (selectedFile) return;
+    setPhotoPreview(form.urlFoto || "");
+  }, [selectedFile, form.urlFoto]);
 
   const categoryOptions = useMemo(
     () => categories.map((category) => (
@@ -90,6 +98,49 @@ function ReportForm() {
     setForm((current) => ({ ...current, [name]: inputType === "checkbox" ? checked : value }));
   }
 
+  function handlePhotoChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setSelectedFile(null);
+      setPhotoPreview(form.urlFoto || "");
+      return;
+    }
+
+    const validTypes = ["image/jpeg", "image/png", "image/webp", "image/bmp"]; 
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    const isValidType = validTypes.includes(file.type) || ["jpg", "jpeg", "png", "webp", "bmp"].includes(extension);
+
+    if (!isValidType) {
+      setError("Solo se permiten imágenes .jpg, .jpeg, .png, .webp o .bmp");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("La imagen no puede superar los 5 MB");
+      event.target.value = "";
+      return;
+    }
+
+    setSelectedFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+    setForm((current) => ({ ...current, urlFoto: "" }));
+    setError("");
+  }
+
+  async function uploadPhoto(reportId) {
+    if (!selectedFile) return;
+
+    const formData = new FormData();
+    formData.append("foto", selectedFile);
+
+    await apiRequest(`/reportes/${reportId}/foto`, {
+      accessToken: session.access_token,
+      method: "POST",
+      body: formData,
+    });
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setSubmitting(true);
@@ -99,10 +150,12 @@ function ReportForm() {
       const payload = {
         ...form,
         idCategoriaObjeto: Number(form.idCategoriaObjeto),
-        urlFoto: form.urlFoto || null,
+        urlFoto: selectedFile ? null : (form.urlFoto || null),
         nombrePersonalLimpieza: form.nombrePersonalLimpieza || null,
       };
       delete payload.tipo;
+
+      let reportId = id;
       if (isEditing) {
         await apiRequest(`/reportes/${id}`, {
           accessToken: session.access_token,
@@ -110,12 +163,18 @@ function ReportForm() {
           body: JSON.stringify(payload),
         });
       } else {
-        await apiRequest("/reportes", {
+        const createdReport = await apiRequest("/reportes", {
           accessToken: session.access_token,
           method: "POST",
           body: JSON.stringify({ ...payload, tipo: form.tipo }),
         });
+        reportId = createdReport.idReporte;
       }
+
+      if (selectedFile) {
+        await uploadPhoto(reportId);
+      }
+
       navigate("/mis-objetos");
     } catch (submitError) {
       setError(submitError.message || "No se pudo guardar el reporte.");
@@ -176,10 +235,17 @@ function ReportForm() {
           <section className="report-card report-photo-card">
             <h2>{isFound ? "Foto Prioritaria" : "Cargar Foto"} <span>(Opcional)</span></h2>
             <div className={`report-photo-dropzone report-photo-dropzone--${form.tipo}`}>
-              <img src="/assets/archive.svg" alt="" />
-              <strong>{isFound ? "Sube una foto del objeto" : "Sube una imagen de referencia"}</strong>
-              <small>Usa una URL pública de imagen (opcional).</small>
+              {photoPreview ? (
+                <img className="report-photo-preview" src={photoPreview} alt="Vista previa del objeto" />
+              ) : (
+                <>
+                  <img src="/assets/archive.svg" alt="" />
+                  <strong>{isFound ? "Sube una foto del objeto" : "Sube una imagen de referencia"}</strong>
+                </>
+              )}
+              <small>{selectedFile ? `Archivo: ${selectedFile.name}` : "Sube una imagen JPG, PNG, WEBP o BMP o usa una URL pública."}</small>
             </div>
+            <input className="report-photo-file" type="file" accept=".jpg,.jpeg,.png,.webp,.bmp,image/jpeg,image/png,image/webp,image/bmp" onChange={handlePhotoChange} aria-label="Seleccionar foto del reporte" />
             <input className="report-photo-url" type="url" name="urlFoto" value={form.urlFoto} onChange={updateField} placeholder="https://..." aria-label="URL de la foto" />
           </section>
           <section className="report-card report-submit-card">
