@@ -21,6 +21,7 @@ Correr con: uvicorn app.main:app --host 0.0.0.0 --port 8001
 from pathlib import Path
 
 import httpx
+import numpy as np
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -51,6 +52,7 @@ class IndexarRequest(BaseModel):
 
 class BuscarRequest(BaseModel):
     descripcion: str = Field(min_length=3, max_length=500)
+    imagen_url: str | None = None
     tipo_reporte: str = Field(
         default="perdido",
         pattern="^(perdido|encontrado)$",
@@ -111,16 +113,33 @@ async def indexar(datos: IndexarRequest):
 
 @app.post("/buscar")
 def buscar(datos: BuscarRequest):
-    """Busca reportes de `tipo_reporte` cuya foto se parece a la descripción.
+    """Busca reportes de `tipo_reporte` combinando descripción y foto opcional.
     La comparación vectorial la hace Postgres (función buscar_reportes_similares
-    + índice HNSW) — aquí solo generamos el embedding del texto y pedimos los
-    campos legibles (nombre, lugar, etc.) de los ids que devolvió la función."""
+    + índice HNSW). Cuando se proporciona una foto, combina su embedding con
+    el de texto antes de consultar."""
     vector_texto = motor.embedding_de_texto(datos.descripcion)
+    vector_consulta = vector_texto
+
+    if datos.imagen_url:
+        try:
+            respuesta_imagen = httpx.get(datos.imagen_url, timeout=15, follow_redirects=True)
+            respuesta_imagen.raise_for_status()
+        except httpx.HTTPError as error:
+            raise HTTPException(
+                502, "No se pudo descargar la imagen del reporte perdido"
+            ) from error
+
+        vector_imagen = motor.embedding_de_imagen_bytes(respuesta_imagen.content)
+        vector_consulta = vector_texto + vector_imagen
+        norma = np.linalg.norm(vector_consulta)
+        if norma == 0:
+            raise HTTPException(500, "No se pudieron combinar los embeddings de texto e imagen")
+        vector_consulta /= norma
 
     with obtener_conexion() as conexion, conexion.cursor() as cursor:
         cursor.execute(
             "SELECT id_reporte, distancia FROM buscar_reportes_similares(%s::vector, %s, %s)",
-            (vector_texto.tolist(), datos.limite, datos.tipo_reporte),
+            (vector_consulta.tolist(), datos.limite, datos.tipo_reporte),
         )
         candidatos = cursor.fetchall()  # [(id_reporte, distancia), ...]
 

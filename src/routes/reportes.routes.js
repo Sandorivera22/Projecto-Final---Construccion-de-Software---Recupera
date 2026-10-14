@@ -20,6 +20,7 @@ const uploadFoto = multer({
 
 router.get("/", requireAuth, controller.listar);
 router.get("/mios", requireAuth, controller.misReportes);
+router.get("/mis-coincidencias", requireAuth, controller.misCoincidencias);
 router.get("/buscar-semantico", requireAuth, controller.buscarSemantico);
 router.get("/:id", requireAuth, controller.obtener);
 router.post("/", requireAuth, controller.crear);

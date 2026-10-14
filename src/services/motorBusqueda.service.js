@@ -23,7 +23,7 @@ function indexarFoto(idReporte, urlFoto) {
  * Búsqueda semántica: a diferencia de indexarFoto, aquí SÍ hay que esperar
  * la respuesta — el usuario necesita los resultados para continuar.
  */
-async function buscarPorDescripcion({ descripcion, tipoReporte, limite, umbralMinimo }) {
+async function buscarPorDescripcion({ descripcion, tipoReporte, limite, umbralMinimo, imagenUrl }) {
   if (!MOTOR_BUSQUEDA_URL) {
     throw new AppError("El motor de búsqueda no está configurado (falta MOTOR_BUSQUEDA_URL)", 500);
   }
@@ -38,6 +38,7 @@ async function buscarPorDescripcion({ descripcion, tipoReporte, limite, umbralMi
         tipo_reporte: tipoReporte,
         limite,
         umbral_minimo: umbralMinimo,
+        ...(imagenUrl && { imagen_url: imagenUrl }),
       }),
     });
   } catch {

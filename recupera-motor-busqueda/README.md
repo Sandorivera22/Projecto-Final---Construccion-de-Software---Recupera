@@ -74,6 +74,10 @@ devuelve los más parecidos ordenados por similitud.
 }
 ```
 
+Si el reporte perdido tiene una foto, el backend también envía su URL como
+`imagen_url`. El motor combina los embeddings normalizados de la descripción
+y la foto antes de buscar; sin foto, la búsqueda sigue usando solo el texto.
+
 ```json
 {
   "resultados": [

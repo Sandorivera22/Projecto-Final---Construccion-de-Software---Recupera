@@ -80,6 +80,19 @@ async function misReclamaciones(req, res) {
   res.json(reclamaciones);
 }
 
+async function reclamacionesRecibidas(req, res) {
+  const reclamaciones = await prisma.reclamacion.findMany({
+    where: { reporte: { idUsuario: req.usuario.idUsuario } },
+    include: {
+      reporte: { include: { categoriaObjeto: true } },
+      usuario: REPORTANTE_PUBLICO,
+      evaluacion: true,
+    },
+    orderBy: { fechaSolicitud: "desc" },
+  });
+  res.json(reclamaciones);
+}
+
 // Listado para encargado/admin: cola de reclamaciones a revisar
 async function listar(req, res) {
   const { estado, page, pageSize } = filtrosReclamacionSchema.parse(req.query);
@@ -174,4 +187,4 @@ async function evaluar(req, res) {
   res.status(201).json(resultado);
 }
 
-module.exports = { crear, misReclamaciones, listar, obtener, evaluar };
+module.exports = { crear, misReclamaciones, reclamacionesRecibidas, listar, obtener, evaluar  };

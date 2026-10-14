@@ -7,6 +7,7 @@ const router = Router();
 
 router.post("/", requireAuth, controller.crear);
 router.get("/mias", requireAuth, controller.misReclamaciones);
+router.get("/recibidas", requireAuth, controller.reclamacionesRecibidas);
 router.get("/", requireAuth, requireRole("encargado", "admin"), controller.listar);
 router.get("/:id", requireAuth, controller.obtener);
 router.post("/:id/evaluacion", requireAuth, requireRole("encargado", "admin"), controller.evaluar);
