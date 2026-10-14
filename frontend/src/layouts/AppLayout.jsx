@@ -1,5 +1,5 @@
 import React from "react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import Logo from "../components/Logo";
 import { useAuth } from "../context/AuthContext";
@@ -24,9 +24,7 @@ function getInitials(name, email) {
 }
 
 function AppLayout({ children }) {
-  const { profile, session, signOut } = useAuth();
-  const [isSigningOut, setIsSigningOut] = useState(false);
-  const [signOutError, setSignOutError] = useState("");
+  const { profile, session } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const displayName = profile?.nombreCompleto || session?.user?.email || "Usuario";
@@ -36,18 +34,6 @@ function AppLayout({ children }) {
     () => getInitials(profile?.nombreCompleto, session?.user?.email),
     [profile?.nombreCompleto, session?.user?.email]
   );
-
-  async function handleSignOut() {
-    setIsSigningOut(true);
-    setSignOutError("");
-    try {
-      await signOut();
-    } catch (error) {
-      setSignOutError(error.message || "No se pudo cerrar la sesión.");
-    } finally {
-      setIsSigningOut(false);
-    }
-  }
 
   return (
     <div className="app-shell">
@@ -75,9 +61,9 @@ function AppLayout({ children }) {
           <button
             className="user-summary"
             type="button"
-            onClick={handleSignOut}
-            disabled={isSigningOut}
-            title="Cerrar sesión"
+            onClick={() => navigate("/perfil")}
+            aria-label={`Abrir perfil de ${displayName}`}
+            title="Mi Perfil"
           >
             <span className="avatar">{initials}</span>
             <span className="user-summary__copy">
@@ -87,8 +73,6 @@ function AppLayout({ children }) {
           </button>
         </div>
       </header>
-
-      {signOutError ? <div className="app-notice">{signOutError}</div> : null}
 
       <div className="app-workspace">
         <aside className="app-sidebar">

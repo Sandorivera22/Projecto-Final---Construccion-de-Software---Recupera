@@ -21,10 +21,17 @@ async function esParteDeLaReclamacion(reclamacion, usuario) {
 }
 
 async function crear(req, res) {
+  if (req.usuario.rol.nombreRol !== "estudiante") {
+    throw new AppError("Solo los estudiantes pueden crear reclamaciones", 403);
+  }
+
   const datos = crearReclamacionSchema.parse(req.body);
 
   const reporte = await prisma.reporte.findUnique({ where: { idReporte: datos.idReporte } });
   if (!reporte) throw new AppError("Reporte no encontrado", 404);
+  if (reporte.tipo !== "encontrado") {
+    throw new AppError("Solo se pueden reclamar objetos reportados como encontrados", 400);
+  }
   if (reporte.estado === "retirado" || reporte.estado === "resuelto") {
     throw new AppError("Este reporte ya no admite reclamaciones", 400);
   }
@@ -73,6 +80,19 @@ async function misReclamaciones(req, res) {
     where: { idUsuario: req.usuario.idUsuario },
     include: {
       reporte: { include: { categoriaObjeto: true } },
+      evaluacion: true,
+    },
+    orderBy: { fechaSolicitud: "desc" },
+  });
+  res.json(reclamaciones);
+}
+
+async function reclamacionesRecibidas(req, res) {
+  const reclamaciones = await prisma.reclamacion.findMany({
+    where: { reporte: { idUsuario: req.usuario.idUsuario } },
+    include: {
+      reporte: { include: { categoriaObjeto: true } },
+      usuario: REPORTANTE_PUBLICO,
       evaluacion: true,
     },
     orderBy: { fechaSolicitud: "desc" },
@@ -133,6 +153,71 @@ async function evaluar(req, res) {
     include: { evaluacion: true },
   });
   if (!reclamacion) throw new AppError("Reclamación no encontrada", 404);
+
+  if (datos.decision === "completada") {
+    if (reclamacion.estado !== "aprobada" || reclamacion.evaluacion?.decision !== "aprobada") {
+      throw new AppError("Solo se puede completar una reclamación aprobada", 400);
+    }
+
+    const resultado = await prisma.$transaction(async (tx) => {
+      const evaluacion = await tx.evaluacionReclamacion.update({
+        where: { idReclamacion: id },
+        data: {
+          observaciones: `${reclamacion.evaluacion.observaciones}\n\nEntrega completada: ${datos.observaciones}`,
+        },
+      });
+      const reclamacionActualizada = await tx.reclamacion.update({
+        where: { idReclamacion: id },
+        data: { estado: "completada" },
+      });
+      await tx.reporte.update({
+        where: { idReporte: reclamacion.idReporte },
+        data: { estado: "resuelto" },
+      });
+
+      const reclamacionesAlternas = await tx.reclamacion.findMany({
+        where: {
+          idReporte: reclamacion.idReporte,
+          idReclamacion: { not: id },
+          estado: { in: ["pendiente", "en_revision", "aprobada"] },
+        },
+        include: { evaluacion: true },
+      });
+      for (const reclamacionAlterna of reclamacionesAlternas) {
+        const observacionCierre = "Cerrada porque el objeto fue entregado a otro reclamante.";
+        await tx.reclamacion.update({
+          where: { idReclamacion: reclamacionAlterna.idReclamacion },
+          data: { estado: "rechazada" },
+        });
+        if (reclamacionAlterna.evaluacion) {
+          await tx.evaluacionReclamacion.update({
+            where: { idReclamacion: reclamacionAlterna.idReclamacion },
+            data: {
+              decision: "rechazada",
+              observaciones: `${reclamacionAlterna.evaluacion.observaciones}\n\n${observacionCierre}`,
+            },
+          });
+        } else {
+          await tx.evaluacionReclamacion.create({
+            data: {
+              idReclamacion: reclamacionAlterna.idReclamacion,
+              idUsuarioEncargado: req.usuario.idUsuario,
+              decision: "rechazada",
+              observaciones: observacionCierre,
+            },
+          });
+        }
+      }
+
+      return { evaluacion, reclamacion: reclamacionActualizada };
+    });
+
+    return res.status(201).json(resultado);
+  }
+
+  if (!["pendiente", "en_revision"].includes(reclamacion.estado)) {
+    throw new AppError("Esta reclamación ya no admite una decisión", 400);
+  }
   if (reclamacion.evaluacion) {
     throw new AppError("Esta reclamación ya fue evaluada", 400);
   }
@@ -152,20 +237,21 @@ async function evaluar(req, res) {
       data: { estado: datos.decision },
     });
 
-    // Si se completa la entrega, el reporte pasa a resuelto.
-    if (datos.decision === "completada") {
-      await tx.reporte.update({
-        where: { idReporte: reclamacion.idReporte },
-        data: { estado: "resuelto" },
-      });
-    }
-
     // Si se rechaza, el reporte vuelve a estar activo para otras reclamaciones.
     if (datos.decision === "rechazada") {
-      await tx.reporte.updateMany({
-        where: { idReporte: reclamacion.idReporte, estado: "en_proceso" },
-        data: { estado: "activo" },
+      const reclamacionesRestantes = await tx.reclamacion.count({
+        where: {
+          idReporte: reclamacion.idReporte,
+          idReclamacion: { not: id },
+          estado: { in: ["pendiente", "en_revision", "aprobada"] },
+        },
       });
+      if (reclamacionesRestantes === 0) {
+        await tx.reporte.updateMany({
+          where: { idReporte: reclamacion.idReporte, estado: "en_proceso" },
+          data: { estado: "activo" },
+        });
+      }
     }
 
     return { evaluacion, reclamacion: reclamacionActualizada };
@@ -174,4 +260,4 @@ async function evaluar(req, res) {
   res.status(201).json(resultado);
 }
 
-module.exports = { crear, misReclamaciones, listar, obtener, evaluar };
+module.exports = { crear, misReclamaciones, reclamacionesRecibidas, listar, obtener, evaluar };

@@ -12,6 +12,8 @@ import SearchReports from "./pages/SearchReports";
 import ReportDetail from "./pages/ReportDetail";
 import Matches from "./pages/Matches";
 import ClaimProcess from "./pages/ClaimProcess";
+import ClaimConversation from "./pages/ClaimConversation";
+import ClaimReview from "./pages/ClaimReview";
 import Profile from "./pages/Profile";
 import Administration from "./pages/Administration";
 
@@ -116,15 +118,35 @@ function App() {
           />
 
                   <Route
-          path="/reclamacion"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <ClaimProcess />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
+                    path="/reclamacion/:idReporte"
+                    element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <ClaimProcess />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/reclamaciones/:id/conversacion"
+                    element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <ClaimConversation />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/reclamaciones/revision"
+                    element={
+                      <ProtectedRoute>
+                        <AppLayout>
+                          <ClaimReview />
+                        </AppLayout>
+                      </ProtectedRoute>
+                    }
+                  />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

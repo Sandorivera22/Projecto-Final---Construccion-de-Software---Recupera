@@ -14,9 +14,12 @@ function formatDate(value) {
 
 function ReportDetail() {
   const { id } = useParams();
-  const { session } = useAuth();
+  const { profile, session } = useAuth();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [myClaim, setMyClaim] = useState(null);
+  const [loadingMyClaim, setLoadingMyClaim] = useState(false);
+  const [claimError, setClaimError] = useState("");
   const [error, setError] = useState("");
 
   async function loadReport() {
@@ -33,8 +36,40 @@ function ReportDetail() {
 
   useEffect(() => { loadReport(); }, [id, session.access_token]);
 
+  useEffect(() => {
+    if (profile?.rol?.nombreRol !== "estudiante") return;
+
+    let cancelled = false;
+    async function loadMyClaim() {
+      setLoadingMyClaim(true);
+      setClaimError("");
+      try {
+        const claims = await apiRequest("/reclamaciones/mias", { accessToken: session.access_token });
+        const matchingClaim = claims.find((claim) =>
+          String(claim.idReporte) === String(id) &&
+          ["pendiente", "en_revision", "aprobada"].includes(claim.estado)
+        );
+        if (!cancelled) setMyClaim(matchingClaim || null);
+      } catch (loadError) {
+        if (!cancelled) setClaimError(loadError.message || "No se pudo comprobar tu reclamación.");
+      } finally {
+        if (!cancelled) setLoadingMyClaim(false);
+      }
+    }
+
+    loadMyClaim();
+    return () => { cancelled = true; };
+  }, [id, profile?.rol?.nombreRol, session.access_token]);
+
   if (loading) return <LoadingState message="Cargando detalle..." />;
   if (error) return <div className="detail-page"><ErrorState message={error} onRetry={loadReport} /><Link className="back-link" to="/buscar-objetos">← Volver a buscar objetos</Link></div>;
+
+  const isOwner = report.usuario?.idUsuario === profile?.idUsuario;
+  const canClaim = profile?.rol?.nombreRol === "estudiante" &&
+    report.tipo === "encontrado" &&
+    !isOwner &&
+    !["resuelto", "retirado"].includes(report.estado);
+  const isStaff = ["encargado", "admin"].includes(profile?.rol?.nombreRol);
 
   return (
     <div className="detail-page">
@@ -69,8 +104,23 @@ function ReportDetail() {
             <p>La identidad y datos de contacto se mantienen protegidos.</p>
           </section>
           <div className="detail-actions">
-            <button type="button" className="primary-button" disabled>Reclamar objeto</button>
-            <button type="button" className="secondary-button" disabled>Contactar reportante</button>
+            {canClaim ? (
+              claimError ? (
+                <ErrorState message={claimError} />
+              ) : loadingMyClaim ? (
+                <button type="button" className="primary-button" disabled>Comprobando reclamación...</button>
+              ) : (
+                <Link className="primary-button" to={myClaim ? `/reclamaciones/${myClaim.idReclamacion}/conversacion` : `/reclamacion/${report.idReporte}`}>
+                  {myClaim ? "Abrir conversación" : "Reclamar objeto"}
+                </Link>
+              )
+            ) : null}
+            {isOwner ? (
+              <Link className="secondary-button" to="/perfil">Ver reclamaciones recibidas</Link>
+            ) : null}
+            {isStaff ? (
+              <Link className="secondary-button" to="/reclamaciones/revision">Revisar reclamaciones</Link>
+            ) : null}
           </div>
         </section>
       </div>
