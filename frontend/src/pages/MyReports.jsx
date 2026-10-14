@@ -56,7 +56,13 @@ function MyReports() {
           <h1>Mis Objetos Reportados</h1>
           <p>Administra los reportes que has creado. Puedes marcar objetos como recuperados al instante.</p>
         </div>
-        <Link className="new-report-button" to="/reportar/perdido">Nuevo Reporte</Link>
+        <details className="new-report-menu">
+          <summary className="new-report-button">Nuevo Reporte</summary>
+          <div className="new-report-menu__options">
+            <Link to="/reportar/perdido">Reportar objeto perdido</Link>
+            <Link to="/reportar/encontrado">Reportar objeto encontrado</Link>
+          </div>
+        </details>
       </div>
 
       {error ? <ErrorState message={error} onRetry={loadReports} /> : null}

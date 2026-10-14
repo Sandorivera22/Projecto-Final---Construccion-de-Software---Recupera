@@ -107,9 +107,9 @@ function Dashboard() {
       <section className="activity-card">
         <div className="activity-card__header">
           <h2>Actividad Reciente del Campus</h2>
-          <button className="text-button text-button--danger" type="button" disabled>
+          <Link className="text-button text-button--danger" to="/buscar-objetos">
             Ver todo
-          </button>
+          </Link>
         </div>
 
         {error ? <ErrorState message={error} onRetry={loadDashboard} /> : null}

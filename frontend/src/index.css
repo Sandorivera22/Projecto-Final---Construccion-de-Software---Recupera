@@ -625,6 +625,10 @@ button:disabled {
   font-weight: 700;
 }
 
+.activity-card__header .text-button {
+  text-decoration: none;
+}
+
 .activity-table {
   width: 100%;
   border-collapse: collapse;
@@ -1535,6 +1539,48 @@ button:disabled {
   padding: 0 17px;
   color: #fff;
   white-space: nowrap;
+}
+
+.new-report-menu {
+  position: relative;
+}
+
+.new-report-menu summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.new-report-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.new-report-menu__options {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  min-width: 220px;
+  padding: 6px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 12%);
+}
+
+.new-report-menu__options a {
+  padding: 10px 12px;
+  border-radius: 5px;
+  color: #333;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.new-report-menu__options a:hover,
+.new-report-menu__options a:focus-visible {
+  background: #f5f5f5;
 }
 
 .new-report-button:hover,
