@@ -13,6 +13,15 @@ function formatDate(value) {
     : "";
 }
 
+function getInitials(name) {
+  return (name || "Usuario")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join("");
+}
+
 export default function ClaimConversation() {
   const { id } = useParams();
   const { profile, session } = useAuth();
@@ -70,6 +79,13 @@ export default function ClaimConversation() {
   if (error && !claim) return <div className="claim-page"><ErrorState message={error} onRetry={loadConversation} /></div>;
 
   const isClosed = closedStatuses.includes(claim.estado);
+  const claimant = claim.usuario;
+  const reporter = claim.reporte?.usuario;
+  const isClaimant = String(claimant?.idUsuario) === String(profile?.idUsuario);
+  const isReporter = String(reporter?.idUsuario) === String(profile?.idUsuario);
+  const isStaffViewer = !isClaimant && !isReporter;
+  const otherParticipant = isClaimant ? reporter : claimant;
+  const otherParticipantName = otherParticipant?.nombreCompleto || "Usuario del campus";
   const claimStatusLabels = {
     pendiente: "Pendiente de revisión",
     en_revision: "En revisión",
@@ -82,17 +98,58 @@ export default function ClaimConversation() {
     <div className="claim-page">
       <div className="claim-header claim-conversation-header">
         <div>
-          <h1>Conversación de reclamación</h1>
-          <p>{claim.reporte?.nombreObjeto} · {claimStatusLabels[claim.estado] || claim.estado}</p>
+          <span className="claim-page-eyebrow">Seguimiento de reclamación</span>
+          <h1>Conversación</h1>
         </div>
-        <Link className="claim-cancel" to="/perfil">Volver a Mi Perfil</Link>
+        <Link className="claim-cancel" to="/reclamaciones">Volver a Reclamaciones</Link>
       </div>
 
       {error ? <ErrorState message={error} /> : null}
 
+      <section className="claim-conversation-summary" aria-label="Participantes y objeto de la reclamación">
+        <span className="claim-conversation-avatar" aria-hidden="true">
+          {isStaffViewer ? "RC" : getInitials(otherParticipantName)}
+        </span>
+        <div className="claim-conversation-summary__copy">
+          <span>{isStaffViewer ? "Participantes de la conversación" : "Estás conversando con"}</span>
+          {isStaffViewer ? (
+            <strong>{claimant?.nombreCompleto || "Reclamante"} y {reporter?.nombreCompleto || "Reportante"}</strong>
+          ) : (
+            <strong>{otherParticipantName}</strong>
+          )}
+          <p>
+            Sobre <b>{claim.reporte?.nombreObjeto || "el objeto reportado"}</b>
+            {claim.reporte?.lugarCampus ? ` · ${claim.reporte.lugarCampus}` : ""}
+          </p>
+        </div>
+        <span className={`claim-conversation-status claim-conversation-status--${claim.estado}`}>
+          {claimStatusLabels[claim.estado] || claim.estado}
+        </span>
+      </section>
+
+      {isStaffViewer ? (
+        <div className="claim-conversation-participants">
+          <span><b>Reclamante:</b> {claimant?.nombreCompleto || "No disponible"}</span>
+          <span><b>Reportante:</b> {reporter?.nombreCompleto || "No disponible"}</span>
+        </div>
+      ) : null}
+
       <section className="claim-conversation-card" aria-label="Mensajes de la reclamación">
+        <div className="claim-conversation-card__heading">
+          <div>
+            <h2>Mensajes</h2>
+            <p>Coordina la validación y la entrega del objeto por este canal.</p>
+          </div>
+        </div>
         {messages.length === 0 ? (
-          <p className="claim-conversation-empty">Aún no hay mensajes. Puedes iniciar la conversación para coordinar la validación y entrega.</p>
+          <div className="claim-conversation-empty">
+            <strong>Aún no hay mensajes</strong>
+            <p>
+              {isStaffViewer
+                ? "Puedes escribir a las personas involucradas para ayudar a coordinar la revisión y entrega."
+                : `Inicia la conversación con ${otherParticipantName} para coordinar la validación y entrega.`}
+            </p>
+          </div>
         ) : (
           <ol className="claim-message-list">
             {messages.map((item) => {

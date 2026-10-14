@@ -105,14 +105,20 @@ export default function ClaimReview() {
                   <div>
                     <h2>{claim.reporte?.nombreObjeto || "Objeto reportado"}</h2>
                     <p>Reclamante: {claim.usuario?.nombreCompleto || "Usuario"}</p>
+                    {claim.reporte?.lugarCampus ? <p>{claim.reporte.lugarCampus}</p> : null}
                   </div>
                   <span className={`profile-status-pill profile-status-pill--${claim.estado}`}>
                     {statusLabels[claim.estado] || claim.estado}
                   </span>
                 </div>
 
-                <p className="claim-review-card__evidence">{claim.pruebasPropiedad}</p>
-                <Link to={`/reclamaciones/${claim.idReclamacion}/conversacion`}>Abrir conversación</Link>
+                <section className="claim-review-card__evidence">
+                  <h3>Detalles aportados para validar la propiedad</h3>
+                  <p>{claim.pruebasPropiedad}</p>
+                </section>
+                <Link className="claim-review-card__conversation" to={`/reclamaciones/${claim.idReclamacion}/conversacion`}>
+                  Abrir conversación
+                </Link>
 
                 {isPending || isApproved ? (
                   <div className="claim-review-card__actions">

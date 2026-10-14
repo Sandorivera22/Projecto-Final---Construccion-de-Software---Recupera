@@ -9,6 +9,7 @@ const navigation = [
   { label: "Mis objetos", icon: "/assets/folder.svg", to: "/mis-objetos" },
   { label: "Buscar objetos", icon: "/assets/search.svg", to: "/buscar-objetos" },
   { label: "Coincidencias", icon: "/assets/refresh.svg", to: "/matches" },
+  { label: "Reclamaciones", icon: "/assets/archive-claims.svg", to: "/reclamaciones" },
   { label: "Mi Perfil", icon: "/assets/user.svg", to: "/perfil" },
   { label: "Administración", icon: "/assets/settings.svg", to: "/administracion", adminOnly: true },
 ];

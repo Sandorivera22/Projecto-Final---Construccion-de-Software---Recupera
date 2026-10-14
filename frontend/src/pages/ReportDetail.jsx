@@ -116,7 +116,7 @@ function ReportDetail() {
               )
             ) : null}
             {isOwner ? (
-              <Link className="secondary-button" to="/perfil">Ver reclamaciones recibidas</Link>
+              <Link className="secondary-button" to="/reclamaciones">Ver reclamaciones recibidas</Link>
             ) : null}
             {isStaff ? (
               <Link className="secondary-button" to="/reclamaciones/revision">Revisar reclamaciones</Link>

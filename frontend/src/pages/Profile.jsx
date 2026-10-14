@@ -13,14 +13,6 @@ const statusLabels = {
   retirado: "Retirado",
 };
 
-const claimStatusLabels = {
-  pendiente: "Pendiente",
-  en_revision: "En revisión",
-  aprobada: "Aprobada",
-  rechazada: "Rechazada",
-  completada: "Entrega completada",
-};
-
 function getInitials(name, email) {
   const source = name || email || "U";
 
@@ -51,8 +43,6 @@ function Profile() {
   } = useAuth();
 
   const [reports, setReports] = useState([]);
-  const [claims, setClaims] = useState([]);
-  const [receivedClaims, setReceivedClaims] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -78,23 +68,11 @@ function Profile() {
     setError("");
 
     try {
-      const [reportsResponse, claimsResponse, receivedClaimsResponse] = await Promise.all([
-        apiRequest("/reportes/mios", {
-          accessToken: session.access_token,
-        }),
-
-        apiRequest("/reclamaciones/mias", {
-          accessToken: session.access_token,
-        }),
-
-        apiRequest("/reclamaciones/recibidas", {
-          accessToken: session.access_token,
-        }),
-      ]);
+      const reportsResponse = await apiRequest("/reportes/mios", {
+        accessToken: session.access_token,
+      });
 
       setReports(reportsResponse || []);
-      setClaims(claimsResponse || []);
-      setReceivedClaims(receivedClaimsResponse || []);
     } catch (loadError) {
       setError(
         loadError.message ||
@@ -624,59 +602,6 @@ function Profile() {
             ) : null}
           </section>
 
-          {/* RECLAMACIONES */}
-          <section className="profile-claims-card">
-            <div className="profile-claims-card__summary">
-              <span className="profile-claims-card__label">
-                Reclamaciones
-              </span>
-
-              <strong>
-                {loading ? "—" : claims.length}
-              </strong>
-
-              <p>
-                Solicitudes realizadas por ti
-              </p>
-              {["encargado", "admin"].includes(profile?.rol?.nombreRol) ? (
-                <Link className="profile-history__link" to="/reclamaciones/revision">
-                  Abrir cola de revisión
-                </Link>
-              ) : null}
-            </div>
-
-            <div className="profile-claims-groups">
-              <section>
-                <h3>Reclamaciones que realizaste</h3>
-                {loading ? <p>Cargando...</p> : null}
-                {!loading && claims.length === 0 ? <p>No has realizado reclamaciones.</p> : null}
-                {!loading && claims.map((claim) => (
-                  <article className="profile-claim-row" key={claim.idReclamacion}>
-                    <div>
-                      <strong>{claim.reporte?.nombreObjeto || "Objeto reportado"}</strong>
-                      <span>{claimStatusLabels[claim.estado] || claim.estado}</span>
-                    </div>
-                    <Link to={`/reclamaciones/${claim.idReclamacion}/conversacion`}>Conversación</Link>
-                  </article>
-                ))}
-              </section>
-
-              <section>
-                <h3>Reclamaciones recibidas en tus reportes</h3>
-                {loading ? <p>Cargando...</p> : null}
-                {!loading && receivedClaims.length === 0 ? <p>No has recibido reclamaciones.</p> : null}
-                {!loading && receivedClaims.map((claim) => (
-                  <article className="profile-claim-row" key={claim.idReclamacion}>
-                    <div>
-                      <strong>{claim.reporte?.nombreObjeto || "Objeto reportado"}</strong>
-                      <span>{claimStatusLabels[claim.estado] || claim.estado} · {claim.usuario?.nombreCompleto || "Usuario"}</span>
-                    </div>
-                    <Link to={`/reclamaciones/${claim.idReclamacion}/conversacion`}>Conversación</Link>
-                  </article>
-                ))}
-              </section>
-            </div>
-          </section>
         </div>
       </div>
     </div>

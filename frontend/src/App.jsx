@@ -14,6 +14,7 @@ import Matches from "./pages/Matches";
 import ClaimProcess from "./pages/ClaimProcess";
 import ClaimConversation from "./pages/ClaimConversation";
 import ClaimReview from "./pages/ClaimReview";
+import Claims from "./pages/Claims";
 import Profile from "./pages/Profile";
 import Administration from "./pages/Administration";
 
@@ -97,7 +98,17 @@ function App() {
           />
 
                     <Route
-            path="/perfil"
+                      path="/reclamaciones"
+                      element={
+                        <ProtectedRoute>
+                          <AppLayout>
+                            <Claims />
+                          </AppLayout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/perfil"
             element={
               <ProtectedRoute>
                 <AppLayout>
